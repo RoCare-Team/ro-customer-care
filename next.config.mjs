@@ -1,6 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  reactStrictMode: true,
+  images: {
+    domains: ["www.waterpurifierservicecenter.in"], // ✅ allow this domain
+  },
 };
 
 export default nextConfig;
