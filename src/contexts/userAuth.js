@@ -46,17 +46,21 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   // Logout user and clear localStorage
-  const logout = useCallback(() => {
-    localStorage.removeItem("userToken");
-    localStorage.removeItem("userPhone");
-    localStorage.removeItem("userName");
-    localStorage.removeItem("userEmail");
-    localStorage.removeItem("customer_id"); // ✅ FIXED
-    setIsLoggedIn(false);
-    setUserInfo(null);
-
-    
-  }, []);
+const logout = useCallback(() => {
+  // Clear ALL localStorage items
+  localStorage.removeItem("userInfo");
+  localStorage.removeItem("authToken");
+  localStorage.removeItem("checkoutState");
+  
+  // Update state
+  setIsLoggedIn(false);
+  setUserInfo(null);
+  
+  // Dispatch event
+  window.dispatchEvent(new CustomEvent('authStateChanged', { 
+    detail: { isLoggedIn: false } 
+  }));
+}, []);
 
   // Check on mount + listen for storage changes
   useEffect(() => {

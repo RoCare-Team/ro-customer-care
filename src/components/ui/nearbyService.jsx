@@ -20,7 +20,7 @@ const CityPill = ({ city }) => {
       className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-gray-50 border border-gray-200 shadow-sm hover:shadow-md hover:bg-gray-100 transform hover:-translate-y-0.5 transition-all duration-200"
       aria-label={`Open services in ${city}`}
     >
-      <span className="flex items-center justify-center w-6 h-6 rounded-full bg-gray-800 text-white">
+      <span className="flex items-center justify-center w-6 h-6 rounded-full bg-blue-600 text-white">
         <PinIcon />
       </span>
       <span className="text-xs sm:text-sm font-medium text-gray-700 whitespace-nowrap overflow-hidden text-ellipsis max-w-[12ch]">
@@ -77,7 +77,7 @@ export default function BlueNearbyAreas({ currentCity = "Delhi" }) {
       <section className="bg-white rounded-xl shadow-md p-5 sm:p-8">
         {/* Header */}
         <div className="text-center mb-5">
-          <h2 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-2">
+          <h2 className="text-2xl sm:text-3xl font-bold text-blue-600 mb-2">
             Our RO Service Centers
           </h2>
           <div className="mx-auto mt-2 w-20 h-1 rounded-full bg-gray-700" />
@@ -94,7 +94,7 @@ export default function BlueNearbyAreas({ currentCity = "Delhi" }) {
             <div className="mt-5 flex justify-center">
               <button
                 onClick={toggleShow}
-                className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-gray-800 text-white text-sm hover:bg-gray-700 transition focus:outline-none focus:ring-2 focus:ring-gray-300 shadow"
+                className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-600 text-white text-sm hover:bg-blue-700 transition focus:outline-none focus:ring-2 focus:ring-blue-300 shadow"
                 aria-expanded={showAll}
               >
                 {showAll ? "Show Less" : `Show More (${extraCount} more)`}

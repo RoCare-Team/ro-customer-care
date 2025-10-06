@@ -2,7 +2,7 @@
 import { useState } from "react";
 
 export default function ROServiceContent({ city }) {
-    console.log("city",city);
+ 
     
   const [showMore, setShowMore] = useState(false);
 
@@ -10,7 +10,7 @@ export default function ROServiceContent({ city }) {
   const previewContent = (
     <>
       <p className="text-gray-700 leading-relaxed">
-        Looking For RO Service? Click And Register It Now!!
+        Looking For RO Service? Click And Register It Now!! 
       </p>
       <p className="text-gray-700 leading-relaxed">
         We can reach everyone's door within 24 hours; consequently, people can connect us

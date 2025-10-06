@@ -1,5 +1,13 @@
-// Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 
-export default function handler(req, res) {
-  res.status(200).json({ name: "John Doe" });
-}
+  // pages/api/checkDb.js
+  import { getDBConnection } from '../../lib/db';
+
+  export default async function POST(req,res){
+    try {
+      const db = await getDBConnection();
+      
+      
+    } catch (error) {
+      
+    }
+  }

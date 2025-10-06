@@ -41,7 +41,6 @@ const AccountDetails = () => {
 
 
 
-
     useEffect(() => {
         const fetchUser = () => {
             try {

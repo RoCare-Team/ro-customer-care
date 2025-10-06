@@ -1,10 +1,7 @@
-import CheckoutComponent from "@/components/ui/checkout";
-import { CheckBoxOutlineBlank } from "@mui/icons-material";
+import CheckoutComp from "@/components/ui/checkout";
 
-export default function CheckoutPage () {
-    return (
-        <>
-        <CheckoutComponent/>
-        </>
-    )
+export default function CheckoutPage() {
+  return (
+    <CheckoutComp/>
+  )
 }

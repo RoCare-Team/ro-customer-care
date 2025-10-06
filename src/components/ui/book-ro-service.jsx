@@ -20,8 +20,33 @@ import {
   Briefcase,
   Trash2
 } from 'lucide-react';
-import { useAuth } from '@/contexts/userAuth';
+import toast, { Toaster } from 'react-hot-toast';
 import LoginModal from './login';
+import { getCartItems } from '@/utils/cardData';
+import { useAuth } from '@/contexts/userAuth';
+
+
+
+// Mock Auth Context (replace with your actual context)
+// const useAuth = () => {
+
+//   // const [isLoggedIn, setIsLoggedIn] = React.useState(false);
+
+//   React.useEffect(() => {
+//     // Only access localStorage on client side
+//     if (typeof window !== 'undefined') {
+//       setIsLoggedIn(!!localStorage.getItem('customer_id'));
+//     }
+//   }, []);
+
+//   return {
+//     isLoggedIn,
+//     handleLoginSuccess: () => { }
+//   };
+// };
+
+// Mock Login Modal (replace with your actual component)
+
 
 const ServiceCardSkeleton = () => (
   <div className="group relative flex flex-col justify-between p-3 sm:p-4 h-56 sm:h-64 rounded-xl border border-gray-200 bg-white shadow-sm animate-pulse">
@@ -34,7 +59,23 @@ const ServiceCardSkeleton = () => (
   </div>
 );
 
-const ROServices = (onAddressSubmit, handleClose ) => {
+
+const CartButton = ({ onClick, loading, children, className }) => (
+  <button
+    onClick={onClick}
+    disabled={loading}
+    className={`w-6 h-6 md:w-7 md:h-7 rounded-full text-white flex items-center justify-center transition-all disabled:opacity-50 disabled:cursor-not-allowed ${className}`}
+  >
+    {loading ? (
+      <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+    ) : (
+      children
+    )}
+  </button>
+);
+
+
+const ROServices = ({ onAddressSubmit, handleClose }) => {
   // State management
   const [selectedService, setSelectedService] = useState(null);
   const [selectedApiServices, setSelectedApiServices] = useState([]);
@@ -45,9 +86,9 @@ const ROServices = (onAddressSubmit, handleClose ) => {
   const [selectedAddress, setSelectedAddress] = useState(null);
   const [showAddressForm, setShowAddressForm] = useState(false);
   const [message, setMessage] = useState('');
+  const [quantity, setQuantity] = useState(0)
 
   const [formData, setFormData] = useState({
-    // address_id: '',
     street: '',
     landmark: '',
     houseNo: '',
@@ -57,10 +98,12 @@ const ROServices = (onAddressSubmit, handleClose ) => {
     full_address: '',
     phone: '',
     alt_address_mob: '',
-    phoneNumber:'',
-    home_office:'',
-    name:'',
+    phoneNumber: '',
+    home_office: 'home',
+    name: '',
   });
+
+
 
   // Data states
   const [mainServices, setMainServices] = useState([]);
@@ -69,63 +112,52 @@ const ROServices = (onAddressSubmit, handleClose ) => {
   const [timeSlots, setTimeSlots] = useState([]);
   const [openLoginModal, setOpenLoginModal] = useState(false);
   const [recentAddress, setRecentAddress] = useState([]);
-
-  console.log("recentAddress",recentAddress);
-  
-
-
-
+  const [pendingCartAction, setPendingCartAction] = useState(null);
+  const [cartOperationLoading, setCartOperationLoading] = useState({});
 
   // Loading states
   const [isMainLoading, setIsMainLoading] = useState(true);
   const [isModalLoading, setIsModalLoading] = useState(false);
   const [isTimeSlotsLoading, setIsTimeSlotsLoading] = useState(false);
   const { isLoggedIn, handleLoginSuccess } = useAuth();
+  const [cartLoaded, setCartLoaded] = useState(false);
 
-  console.log("isLoggedIn",isLoggedIn);
-  
-  
 
 
   // Animation states
   const [modalAnimation, setModalAnimation] = useState('');
+  const [expandedCard, setExpandedCard] = useState(null);
 
-  // Sample addresses
-  const [savedAddresses, setSavedAddresses] = useState([
-    {
-      id: 1,
-      type: 'home',
-      area: 'Sector 21',
-      address: 'A-105, Manesar, Gurugram',
-      landmark: 'Near City Mall',
-      pincode: '122051'
-    },
-    {
-      id: 2,
-      type: 'work',
-      area: 'IMT Manesar',
-      address: 'Plot 45, IMT Industrial Area',
-      landmark: 'Opposite Hero MotoCorp',
-      pincode: '122052'
-    }
-  ]);
 
-   const handleInputChange = (e) => {
-    const { id, value } = e.target;
-    setFormData({ ...formData, [id]: value });
-  };
+  const cartItems = getCartItems();
+  // const findAdressId2 = findAdressId();
+
+
+
+
+
 
   // Default time slots fallback
   const defaultTimeSlots = [
-    "09:00 AM", "10:00 AM", "11:00 AM", "12:00 PM",
-    "02:00 PM", "03:00 PM", "04:00 PM", "05:00 PM", "06:00 PM"
+    { id: 1, label: "09:00 AM", name: "Morning" },
+    { id: 2, label: "10:00 AM", name: "Morning" },
+    { id: 3, label: "11:00 AM", name: "Late Morning" },
+    { id: 4, label: "12:00 PM", name: "Noon" },
+    { id: 5, label: "02:00 PM", name: "Afternoon" },
+    { id: 6, label: "03:00 PM", name: "Afternoon" },
+    { id: 7, label: "04:00 PM", name: "Evening" },
+    { id: 8, label: "05:00 PM", name: "Evening" },
+    { id: 9, label: "06:00 PM", name: "Evening" }
   ];
-  const [expandedCard, setExpandedCard] = useState(null);
 
   const toggleExpand = (id) => {
     setExpandedCard(expandedCard === id ? null : id);
   };
-  
+
+  const handleInputChange = (e) => {
+    const { id, value } = e.target;
+    setFormData({ ...formData, [id]: value });
+  };
 
   // Fetch main services for the grid
   const fetchMainServices = useCallback(async () => {
@@ -144,7 +176,7 @@ const ROServices = (onAddressSubmit, handleClose ) => {
 
       const data = await response.json();
 
-      const formattedServices = data.service_details?.map((service) => ({
+      const formattedServices = data?.service_details?.map((service) => ({
         id: service.id,
         service_id: service.id,
         service_name: service.service_name,
@@ -161,11 +193,15 @@ const ROServices = (onAddressSubmit, handleClose ) => {
 
     } catch (error) {
       console.error("Error fetching main services:", error);
+      toast.error("Failed to load services");
       setMainServices([]);
     } finally {
       setIsMainLoading(false);
     }
   }, []);
+
+  console.log("selectedApiServices", selectedApiServices);
+
 
   // Fetch services for modal
   const fetchModalServices = useCallback(async (leadType = 1) => {
@@ -183,26 +219,46 @@ const ROServices = (onAddressSubmit, handleClose ) => {
       if (!response.ok) throw new Error('Failed to fetch modal services');
 
       const data = await response.json();
-      console.log("data", data);
+
+      // Get existing cart from localStorage
+      // Convert cartItems array to a Map for quick lookup
+      const cartMap = new Map(
+        cartItems?.map(item => [String(item.service_id), parseInt(item.quantity)]) || []
+      );
+
+      const formattedServices = data.service_details?.map((service) => {
+        const cartQuantity = cartMap.get(String(service.id)) || 0;
+
+        return {
+          id: service.id,
+          service_id: service.id,
+          service_name: service.service_name,
+          description: service.description,
+          price: parseInt(service.price) || 0,
+          price_without_discount: parseInt(service.price_without_discount) || parseInt(service.price) || 0,
+          image: service.image || "/api/placeholder/48/48",
+          status: service.status || "1",
+          quantity: cartQuantity, // ✅ cartItems ki quantity yaha merge hogi
+        };
+      }) || [];
+
+      console.log("formattedServices", formattedServices);
 
 
-      const formattedServices = data.service_details?.map((service) => ({
-        id: service.id,
-        service_id: service.id,
-        service_name: service.service_name,
-        description: service.description,
-        price: parseInt(service.price) || 0,
-        price_without_discount: parseInt(service.price_without_discount) || parseInt(service.price) || 0,
-        image: service.image || "/api/placeholder/48/48",
-        status: service.status || "1",
-        quantity: 1
-      })) || [];
-
+      // Modal me show karne ke liye set karo
       setModalServices(formattedServices);
-      setCategoryTitle(data.Title || 'Available Services');
+
+      // ✅ Sirf wahi services select karo jinki quantity cart me > 0 hai
+      const servicesInCart = formattedServices.filter(s => s.quantity > 0);
+      console.log("servicesInCart", servicesInCart);
+
+      setSelectedApiServices(servicesInCart);
+
+      // console.log("1666",servicesInCart);
 
     } catch (error) {
       console.error('Error fetching modal services:', error);
+      toast.error("Failed to load services");
       setModalServices([]);
       setCategoryTitle('Services');
     } finally {
@@ -231,15 +287,17 @@ const ROServices = (onAddressSubmit, handleClose ) => {
       if (!response.ok) throw new Error('Failed to fetch time slots');
 
       const data = await response.json();
-      console.log("datadatadatadata", data);
+
+      console.log("datadata", data);
+
 
       let slots = [];
 
       if (Array.isArray(data.all_time_slots)) {
         slots = data.all_time_slots.map((slot) => ({
           id: slot.id,
-          label: slot.time_slots,   // jo UI me show karna h
-          name: slot.slot_name      // extra info agar chahiye
+          label: slot.time_slots,
+          name: slot.slot_name
         }));
       } else if (Array.isArray(data.slots)) {
         slots = data.slots;
@@ -247,12 +305,11 @@ const ROServices = (onAddressSubmit, handleClose ) => {
         slots = defaultTimeSlots;
       }
 
-      console.log("slots", slots);
       setTimeSlots(slots);
-
 
     } catch (error) {
       console.error('Error fetching time slots:', error);
+      toast.error("Failed to load time slots");
       setTimeSlots(defaultTimeSlots);
     } finally {
       setIsTimeSlotsLoading(false);
@@ -270,64 +327,309 @@ const ROServices = (onAddressSubmit, handleClose ) => {
     }
   };
 
-  
-const handleSubmit = async (e) => {
+  const handleCartAction = useCallback(
+    async ({ serviceId, operation, type }) => {
+      console.log("type", type);
+
+      if (!isLoggedIn || !localStorage.getItem("customer_id")) {
+        setOpenLoginModal(true);
+        setPendingCartAction({ serviceId, operation });
+        toast.error("Please login to continue");
+        return;
+      }
+
+      const customerId = localStorage.getItem("customer_id");
+      setCartOperationLoading(prev => ({ ...prev, [serviceId]: true }));
+
+      try {
+        // Get current quantity directly from modalServices to avoid stale value
+        const serviceItem = modalServices.find(s => s.id === serviceId);
+        if (!serviceItem) throw new Error("Service not found");
+        let newQuantity = serviceItem.quantity || 0;
+
+        switch (operation) {
+          case "add":
+            newQuantity += 1;
+            break;
+          case "delete":
+            newQuantity -= 1;
+            break;
+          case "remove":
+            newQuantity = 0;
+            break;
+        }
+
+        // then you do
+        setQuantity(newQuantity);
+        console.log("quantity", quantity);
+
+
+
+        const payload = {
+          service_id: serviceId,
+          type: operation === "remove" ? "delete" : operation,
+          cid: customerId,
+          quantity: newQuantity,
+          source: "RoServiceCare Testing",
+        };
+
+        const res = await fetch(
+          "https://waterpurifierservicecenter.in/customer/ro_customer/add_to_cart.php",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          }
+        );
+        if (!res.ok) throw new Error(`Cart API failed: ${res.status}`);
+        const data = await res.json();
+        localStorage.setItem("checkoutState", data)
+
+        if (data.AllCartDetails) {
+
+          localStorage.setItem("checkoutState", JSON.stringify(data.AllCartDetails));
+          localStorage.setItem("cart_total_price", data.total_price || data.total_main || 0);
+
+          setSelectedApiServices(prev => {
+            // Remove item if quantity is 0
+            if (newQuantity === 0) {
+              toast.success("Service removed from cart");
+              return prev.filter(s => s.id !== serviceId);
+            }
+
+            // Update quantity if item exists
+            const existingIndex = prev.findIndex(s => s.id === serviceId);
+            if (existingIndex !== -1) {
+              toast.success("Cart updated");
+              return prev.map(s =>
+                s.id === serviceId ? { ...s, quantity: newQuantity } : s
+              );
+            }
+
+            // Add new item if not exists
+            const service = modalServices.find(s => s.id === serviceId);
+            if (service) {
+              toast.success("Service added to cart");
+              return [...prev, { ...service, quantity: newQuantity }];
+            }
+
+            return prev;
+          });
+
+          // Update modalServices state the same way
+          setModalServices(prev => {
+            if (newQuantity === 0) {
+              return prev.map(s => (s.id === serviceId ? { ...s, quantity: 0 } : s));
+            }
+            return prev.map(s => (s.id === serviceId ? { ...s, quantity: newQuantity } : s));
+          });
+
+
+          setCartLoaded(prev => !prev);
+        }
+      } catch (error) {
+        console.error("Cart update failed:", error);
+        toast.error("Failed to update cart. Please try again.");
+      } finally {
+        setCartOperationLoading(prev => ({ ...prev, [serviceId]: false }));
+      }
+    },
+    [isLoggedIn, modalServices]
+  );
+
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
+
+    const customerId = localStorage.getItem("customer_id");
+    if (!customerId) {
+      toast.error("Please login first");
+      setOpenLoginModal(true);
+      return;
+    }
+
+    const submitToast = toast.loading("Saving address...");
 
     try {
+      const payload = {
+        ...formData,
+        cid: customerId
+      };
+
       const res = await fetch(
         "https://waterpurifierservicecenter.in/customer/ro_customer/add_address.php",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(formData),
+          body: JSON.stringify(payload),
         }
       );
 
       const data = await res.json();
 
-      // Create local object
-      const addressObj = {
-        flat_no: formData.houseNo,
-        landmark: formData.landmark,
-        area: formData.street,
-        state: formData.state,
-        city: formData.city,
-        pincode: formData.pincode,
-        id: Date.now().toString(),
-      };
+      if (data.status === "success" || data.msg?.toLowerCase().includes("success")) {
+        const addressObj = {
+          id: data.address_id || Date.now().toString(),
+          flat_no: formData.houseNo,
+          landmark: formData.landmark,
+          area: formData.street,
+          state: formData.state,
+          city: formData.city,
+          pincode: formData.pincode,
+          type: formData.home_office || 'home',
+          address: `${formData.houseNo}, ${formData.street}, ${formData.city}`
+        };
 
-      // Save to localStorage
-      const existing = JSON.parse(localStorage.getItem("RecentAddress") || "[]");
-      const isDuplicate = existing.some(
-        (addr) =>
-          addr.flat_no === addressObj.flat_no &&
-          addr.landmark === addressObj.landmark &&
-          addr.area === addressObj.area &&
-          addr.city === addressObj.city &&
-          addr.state === addressObj.state &&
-          addr.pincode === addressObj.pincode
-      );
-      const updated = isDuplicate
-        ? existing
-        : [addressObj, ...existing].slice(0, 10);
-      localStorage.setItem("RecentAddress", JSON.stringify(updated));
+        const existing = JSON.parse(localStorage.getItem("RecentAddress") || "[]");
+        const isDuplicate = existing.some(
+          (addr) =>
+            addr.flat_no === addressObj.flat_no &&
+            addr.landmark === addressObj.landmark &&
+            addr.area === addressObj.area &&
+            addr.city === addressObj.city
+        );
 
-      localStorage.setItem("booking_ads", data.full_address || "");
-      localStorage.setItem(
-        "address_id",
-        JSON.stringify(data.address_id || addressObj.id)
-      );
+        const updated = isDuplicate ? existing : [addressObj, ...existing].slice(0, 10);
+        localStorage.setItem("RecentAddress", JSON.stringify(updated));
 
-      alert(data.msg || "Address saved successfully!");
+        loadRecentAddresses();
+        setSelectedAddress(addressObj);
+        setShowAddressForm(false);
 
-      if (onAddressSubmit) onAddressSubmit(addressObj);
+        setFormData({
+          street: '', landmark: '', houseNo: '', pincode: '', state: '', city: '',
+          full_address: '', phone: '', alt_address_mob: '', phoneNumber: '',
+          home_office: 'home', name: '',
+        });
+
+        toast.success(data.msg || "Address saved successfully!", { id: submitToast });
+      } else {
+        toast.error(data.msg || "Failed to save address", { id: submitToast });
+      }
     } catch (error) {
       console.error("Error saving address:", error);
-      setMessage("Failed to save address. Please try again.");
-    } finally {
-      setLoading(false);
+      toast.error("Failed to save address. Please try again.", { id: submitToast });
+    }
+  };
+  console.log("selectedTime", selectedTime, selectedDate);
+
+
+
+  const handlePaymentCompleted = async (leadtype, redirect = true) => {
+    const cust_id = localStorage.getItem("customer_id");
+    const cust_mobile = localStorage.getItem("userPhone");
+    const address_id = localStorage.getItem("address_id");
+    // const cust_email = localStorage.getItem("email" || "userEmail");
+    const cust_email = localStorage.getItem("email") || localStorage.getItem("userEmail");
+
+    const chkout = JSON.parse(localStorage.getItem("checkoutState") || "[]");
+    const cartItems = JSON.parse(localStorage.getItem("cartItems") || "[]");
+    const cart_id = chkout[0]?.category_cart_id;
+
+    const timeSlotData = localStorage.getItem("bookingTimeSlot");
+    const time = timeSlotData ? JSON.parse(timeSlotData) : {};
+    const appointment_time = selectedTime;
+    const appointment_date = selectedDate;
+
+    const source = 'Testing RoServiceCare';
+
+    console.log("chkout[0].category_cart_id", chkout[0]);
+
+
+    // console.log(cust_id,cust_mobile,address_id,cust_email,appointment_date,appointment_time);
+
+
+    // Validate all required fields
+    if (!cust_id || !cust_mobile || !address_id || !cust_email || !appointment_date || !appointment_time) {
+      toast.error("Please complete all booking details before proceeding to payment", {
+        autoClose: 3000,
+      });
+      return;
+    }
+
+    const payload = {
+      cust_id,
+      cust_mobile,
+      address_id,
+      cust_email,
+      cart_id,
+      appointment_time,
+      appointment_date,
+      source
+    };
+    console.log(payload + 'fasdfasd');
+
+    try {
+      const res = await fetch("https://waterpurifierservicecenter.in/customer/ro_customer/add_lead_with_full_dtls.php", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json();
+
+      if (data.error == false) {
+        // toast.success(data.msg);
+
+        const leftOverItems = chkout.filter(items => items.category_cart_id !== cart_id);
+
+        if (leftOverItems.length > 0) {
+          localStorage.setItem('checkoutState', JSON.stringify(leftOverItems));
+        } else {
+          localStorage.setItem('checkoutState', JSON.stringify([]));
+        }
+
+        const currentCategoryItem = chkout.find(item => item.category_cart_id === cart_id);
+
+        if (currentCategoryItem && cartItems.length > 0) {
+          const checkedOutServiceIds = currentCategoryItem.cart_dtls.map(service => String(service.service_id));
+
+          const remainingItems = cartItems.filter(item => {
+            const isIncluded = checkedOutServiceIds.includes(String(item));
+            return !isIncluded;
+          });
+
+          localStorage.setItem('cartItems', JSON.stringify(remainingItems));
+          window.dispatchEvent(new Event('cartItemsUpdated'));
+        } else if (leftOverItems.length === 0) {
+          localStorage.setItem('cartItems', JSON.stringify([]));
+        }
+
+        // Clear booking data
+        const itemsToRemove = [
+          "bookingTimeSlot",
+          "bookingAddress",
+          "time_slot",
+          "address_id",
+        ];
+
+        itemsToRemove.forEach(item => {
+          localStorage.removeItem(item);
+        });
+
+        // Reset booking state
+
+
+
+        // console.log(JSON.stringify(data) + "the data of the all leads generated");
+        if (redirect) {
+          setTimeout(() => {
+            window.location.href = data.lead_id_for_payment;
+          }, 100);
+        } else {
+          // toast.success("", { autoClose: 3000 });
+          // cons.log("Thank You!.....");
+          toast.success("Thank You!....");
+        }
+        // setTimeout(() => {
+        //     window.location.href = data.lead_id_for_payment;
+        // }, 100);
+      } else {
+        toast.error(data.msg || "Payment processing failed");
+      }
+    } catch (error) {
+      toast.error("Network error. Please try again.");
+      console.error("Payment error:", error);
     }
   };
 
@@ -337,8 +639,18 @@ const handleSubmit = async (e) => {
   }, [fetchMainServices]);
 
   useEffect(() => {
-    loadRecentAddresses()
-  }, [])
+    loadRecentAddresses();
+  }, []);
+
+
+
+  // Handle pending cart action after login
+  useEffect(() => {
+    if (isLoggedIn && pendingCartAction) {
+      handleCartAction(pendingCartAction);
+      setPendingCartAction(null);
+    }
+  }, [isLoggedIn, pendingCartAction, handleCartAction]);
 
   // Handle modal animations
   useEffect(() => {
@@ -351,7 +663,7 @@ const handleSubmit = async (e) => {
   }, [isModalOpen]);
 
   // Handle date change
-  useEffect(() => { 
+  useEffect(() => {
     if (selectedDate) {
       fetchTimeSlots(selectedDate);
     }
@@ -359,29 +671,22 @@ const handleSubmit = async (e) => {
 
   // Modal management functions
   const openModal = useCallback((service) => {
-    // Reset all modal states
     setSelectedService(service);
     setSelectedApiServices([]);
     setSelectedDate('');
     setSelectedTime('');
-    setSelectedAddress(savedAddresses[0] || null);
+    setSelectedAddress(recentAddress[0] || null);
     setCurrentStep(1);
     setShowAddressForm(false);
     setCategoryTitle('');
     setModalServices([]);
     setTimeSlots(defaultTimeSlots);
-
-    // Open modal
     setIsModalOpen(true);
-
-    // Fetch modal services
     fetchModalServices(1);
-  }, [savedAddresses, fetchModalServices]);
+  }, [recentAddress, fetchModalServices]);
 
   const closeModal = useCallback(() => {
     setIsModalOpen(false);
-
-    // Reset all states after animation
     setTimeout(() => {
       setSelectedService(null);
       setSelectedApiServices([]);
@@ -395,64 +700,29 @@ const handleSubmit = async (e) => {
       setTimeSlots(defaultTimeSlots);
       setModalAnimation('');
       setFormData({
-        type: 'home',
-        area: '',
-        address: '',
-        landmark: '',
-        pincode: ''
+        street: '', landmark: '', houseNo: '', pincode: '', state: '', city: '',
+        full_address: '', phone: '', alt_address_mob: '', phoneNumber: '',
+        home_office: 'home', name: '',
       });
     }, 300);
   }, []);
-
-  // Service management functions
-  const handleApiServiceToggle = useCallback((apiService) => {
-    setSelectedApiServices(prev => {
-      const existingIndex = prev.findIndex(s => s.id === apiService.id);
-
-      if (existingIndex !== -1) {
-        return prev.filter(s => s.id !== apiService.id);
-      } else {
-        return [...prev, { ...apiService, quantity: 1 }];
-      }
-    });
-  }, []);
-
-  const updateServiceQuantity = useCallback((serviceId, delta) => {
-    setSelectedApiServices(prev =>
-      prev.map(service =>
-        service.id === serviceId
-          ? { ...service, quantity: Math.max(1, service.quantity + delta) }
-          : service
-      )
-    );
-  }, []);
-
-  const removeService = useCallback((serviceId) => {
-    setSelectedApiServices(prev => prev.filter(s => s.id !== serviceId));
-  }, []);
-
-  // Address management functions
-
 
   // Navigation functions
   const handleProceedToDetails = useCallback(() => {
     if (!isLoggedIn) {
       setOpenLoginModal(true);
+      toast.error("Please login to continue");
       return;
     }
-
-    // agar login hai to modal close karo
-    setOpenLoginModal(false);
 
     if (selectedApiServices.length === 0) {
-      alert("Please select at least one service");
+      toast.error("Please select at least one service");
       return;
     }
 
-    // data already isLoggedIn me aa raha hai, directly step badhao
+    toast.success("Proceeding to booking details");
     setCurrentStep(2);
   }, [isLoggedIn, selectedApiServices.length]);
-
 
   const handleBackToServices = useCallback(() => {
     setCurrentStep(1);
@@ -464,20 +734,29 @@ const handleSubmit = async (e) => {
   // Checkout function
   const handleCheckout = useCallback(() => {
     if (!selectedDate || !selectedTime) {
-      alert('Please select date and time for the service');
+      toast.error('Please select date and time for the service');
       return;
     }
     if (selectedApiServices.length === 0) {
-      alert('Please select at least one service');
+      toast.error('Please select at least one service');
       return;
     }
     if (!selectedAddress) {
-      alert('Please select an address');
+      toast.error('Please select an address');
       return;
     }
 
     const serviceNames = selectedApiServices.map(s => `${s.service_name} (x${s.quantity})`).join(', ');
-    alert(`Services booked: ${serviceNames}\nTotal: ₹${getTotalPrice()}\nDate: ${selectedDate} at ${selectedTime}\nAddress: ${selectedAddress.address}`);
+    toast.success(`Booking confirmed for ₹${getTotalPrice()}`);
+
+    console.log({
+      services: serviceNames,
+      total: getTotalPrice(),
+      date: selectedDate,
+      time: selectedTime,
+      address: selectedAddress
+    });
+
     closeModal();
   }, [selectedDate, selectedTime, selectedApiServices, selectedAddress, closeModal]);
 
@@ -488,18 +767,17 @@ const handleSubmit = async (e) => {
     );
   }, [selectedApiServices]);
 
-
   const getTotalOriginalPrice = useCallback(() => {
     return selectedApiServices.reduce((total, service) =>
       total + (service.price_without_discount * service.quantity), 0
     );
   }, [selectedApiServices]);
 
-
   const getTodayDate = () => {
     const today = new Date();
     return today.toISOString().split("T")[0];
   };
+
   const getServiceBg = (serviceName) => {
     const name = serviceName.toLowerCase();
     if (name.includes('repair')) return 'bg-red-50';
@@ -526,7 +804,6 @@ const handleSubmit = async (e) => {
           <div className="h-4 sm:h-5 bg-gray-200 rounded w-16 sm:w-24 animate-pulse"></div>
         </div>
         <div className="h-3 sm:h-4 bg-gray-200 rounded w-64 sm:w-96 mb-4 sm:mb-6 animate-pulse"></div>
-
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4">
           {Array(12).fill(0).map((_, index) => (
             <ServiceCardSkeleton key={index} />
@@ -535,16 +812,44 @@ const handleSubmit = async (e) => {
       </div>
     );
   }
+
+
+  console.log("selectedApiServices", selectedApiServices);
+
+
   return (
     <>
+      <Toaster
+        position="top-center"
+        toastOptions={{
+          duration: 3000,
+          style: {
+            background: '#363636',
+            color: '#fff',
+            padding: '16px',
+            borderRadius: '12px',
+          },
+          success: {
+            iconTheme: {
+              primary: '#10b981',
+              secondary: '#fff',
+            },
+          },
+          error: {
+            iconTheme: {
+              primary: '#ef4444',
+              secondary: '#fff',
+            },
+          },
+        }}
+      />
+
       <section className="py-6 md:py-16 px-3 md:px-4 bg-gradient-to-br from-gray-50 via-white to-blue-50 overflow-hidden">
         <div className="max-w-7xl mx-auto">
           {/* Section Header */}
           <div className="flex justify-between items-center mb-2">
             <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
               <span className="text-blue-600">RO</span> Services
-              <span className="text-xs sm:text-sm font-normal text-gray-500 ml-2">
-              </span>
             </h1>
             <a
               href="/ro-services"
@@ -556,6 +861,7 @@ const handleSubmit = async (e) => {
           <p className="text-gray-500 text-xs sm:text-sm mb-4 sm:mb-6">
             Choose from our comprehensive range of RO services. Click any service to book directly.
           </p>
+
           {/* Services Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {mainServices?.map((service) => {
@@ -569,7 +875,6 @@ const handleSubmit = async (e) => {
                   key={id}
                   className="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden flex flex-col p-4 border"
                 >
-                  {/* Image Section */}
                   <div className="w-full flex justify-center items-center mb-3">
                     <div className="w-24 h-24 md:w-28 md:h-28 bg-gray-50 rounded-xl flex items-center justify-center">
                       <img
@@ -583,17 +888,14 @@ const handleSubmit = async (e) => {
                     </div>
                   </div>
 
-                  {/* Title */}
                   <h3 className="text-lg font-semibold text-gray-900 text-center mb-1">
                     {title}
                   </h3>
 
-                  {/* Price */}
                   <span className="text-blue-600 font-bold text-xl text-center mb-2">
                     ₹{price}
                   </span>
 
-                  {/* Description with HTML */}
                   <div
                     className="text-gray-600 text-sm text-left leading-snug flex-grow [&>ul]:list-none [&>ul]:space-y-1 [&>ul>li]:flex [&>ul>li]:items-start [&>ul>li]:before:content-['✔'] [&>ul>li]:before:text-blue-600 [&>ul>li]:before:mr-2"
                     dangerouslySetInnerHTML={{
@@ -601,7 +903,6 @@ const handleSubmit = async (e) => {
                     }}
                   />
 
-                  {/* View More / Less Button (abhi yaha turant niche dikh raha hai) */}
                   {isTruncated && (
                     <button
                       onClick={() => toggleExpand(id)}
@@ -611,7 +912,6 @@ const handleSubmit = async (e) => {
                     </button>
                   )}
 
-                  {/* Book Button (always sabse niche) */}
                   <button
                     onClick={() => openModal(service)}
                     className="mt-4 px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 transition w-full"
@@ -619,14 +919,13 @@ const handleSubmit = async (e) => {
                     Book Now
                   </button>
                 </div>
-
               );
             })}
           </div>
         </div>
       </section>
 
-      {/* Enhanced Modal */}
+      {/* Modal */}
       {isModalOpen && selectedService && (
         <div className={`fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-2 md:p-4 backdrop-blur-md transition-all duration-300 ${modalAnimation}`}>
           <div className="bg-white rounded-2xl md:rounded-3xl shadow-2xl max-w-2xl w-full mx-2 md:mx-4 transform transition-all duration-500 max-h-[90vh] md:max-h-[95vh] overflow-y-auto modal-content">
@@ -635,7 +934,6 @@ const handleSubmit = async (e) => {
             <div className="px-4 md:px-8 py-4 md:py-6 bg-gradient-to-r from-gray-50 to-white border-b border-gray-100">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-2 md:space-x-6">
-                  {/* Step Indicator */}
                   <div className="flex items-center space-x-2 md:space-x-3">
                     <div className={`relative w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center text-xs md:text-sm font-bold transition-all duration-300 ${currentStep >= 1
                       ? 'bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-lg shadow-blue-200'
@@ -684,10 +982,8 @@ const handleSubmit = async (e) => {
             {/* Modal Content */}
             <div className="p-4 md:p-8">
               {currentStep === 1 ? (
-                // Step 1: Service Selection with Multi-select
                 <div className="space-y-4 md:space-y-6">
                   <div className="text-center">
-
                     <div className="mt-2 inline-flex items-center bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-xs md:text-sm font-medium">
                       Choose Service you Need
                     </div>
@@ -710,75 +1006,96 @@ const handleSubmit = async (e) => {
                         <div className="mb-4">
                           <h5 className="text-sm font-semibold text-gray-700 mb-3">Selected Services</h5>
                           <div className="space-y-2">
-                            {selectedApiServices.map((selectedServiceItem) => (
-                              <div
-                                key={selectedServiceItem.id}
-                                className="group relative p-2 md:p-4 border-2 border-blue-500 bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl md:rounded-2xl transition-all duration-300 shadow-sm"
-                              >
-                                <div className="flex items-center justify-between">
-                                  <div className="flex items-center space-x-2 md:space-x-3 flex-1">
-                                    <div className={`${getServiceBg(selectedServiceItem.service_name)} w-12 h-12 rounded-xl flex items-center justify-center transition-all duration-300 shadow-sm group-hover:shadow-md`}>
-                                      <img
-                                        src={selectedServiceItem.image}
-                                        alt={selectedServiceItem.service_name}
-                                        className='w-10 h-10 md:w-10 md:h-10 rounded-lg'
-                                        onError={(e) => {
-                                          e.target.src = "/api/placeholder/40/40";
-                                        }}
-                                      />
-                                    </div>
-                                    <div className="flex-1">
-                                      <h5 className="font-bold text-gray-900 text-sm md:text-lg mb-1">
-                                        {selectedServiceItem.service_name}
-                                      </h5>
-                                      <div className="flex items-center space-x-2 md:space-x-3 text-xs md:text-sm text-gray-600">
-                                        <div className="flex items-center space-x-1">
-                                          <span className="font-bold text-gray-900">₹{selectedServiceItem.price}</span>
-                                          {selectedServiceItem.price_without_discount > selectedServiceItem.price && (
-                                            <span className="text-gray-500 line-through">₹{selectedServiceItem.price_without_discount}</span>
-                                          )}
+                            {selectedApiServices
+                              .filter(service => Number(service.quantity) > 0) // <-- ensure it's a number
+                              .map((selectedServiceItem) => (
+                                <div
+                                  key={selectedServiceItem.id}
+                                  className="group relative p-2 md:p-4 border-2 border-blue-500 bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl md:rounded-2xl transition-all duration-300 shadow-sm"
+                                >
+                                  <div className="flex items-center justify-between">
+                                    <div className="flex items-center space-x-2 md:space-x-3 flex-1">
+                                      <div className={`${getServiceBg(selectedServiceItem.service_name)} w-12 h-12 rounded-xl flex items-center justify-center transition-all duration-300 shadow-sm group-hover:shadow-md`}>
+                                        <img
+                                          src={selectedServiceItem.image}
+                                          alt={selectedServiceItem.service_name}
+                                          className='w-10 h-10 md:w-10 md:h-10 rounded-lg'
+                                          onError={(e) => { e.target.src = "/api/placeholder/40/40"; }}
+                                        />
+                                      </div>
+                                      <div className="flex-1">
+                                        <h5 className="font-bold text-gray-900 text-sm md:text-lg mb-1">
+                                          {selectedServiceItem.service_name}
+                                        </h5>
+                                        <div className="flex items-center space-x-2 md:space-x-3 text-xs md:text-sm text-gray-600">
+                                          <div className="flex items-center space-x-1">
+                                            <span className="font-bold text-gray-900">₹{selectedServiceItem.price}</span>
+                                            {selectedServiceItem.price_without_discount > selectedServiceItem.price && (
+                                              <span className="text-gray-500 line-through">₹{selectedServiceItem.price_without_discount}</span>
+                                            )}
+                                          </div>
                                         </div>
                                       </div>
                                     </div>
-                                  </div>
 
-                                  {/* Quantity controls and remove button */}
-                                  <div className="flex items-center space-x-2 md:space-x-3">
-                                    <div className="flex items-center space-x-1 md:space-x-2 bg-white rounded-lg px-2 py-1">
-                                      <button
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          updateServiceQuantity(selectedServiceItem.id, -1);
-                                        }}
-                                        className="w-6 h-6 md:w-7 md:h-7 rounded-full bg-red-500 hover:bg-red-600 text-white flex items-center justify-center transition-all"
+                                    <div className="flex items-center space-x-2 md:space-x-3">
+                                      <div className="flex items-center space-x-1 md:space-x-2 bg-white rounded-lg px-2 py-1">
+                                        <CartButton
+                                          onClick={e => {
+                                            e.stopPropagation();
+                                            if (selectedServiceItem.quantity > 0) {
+                                              handleCartAction({
+                                                serviceId: selectedServiceItem.id,
+                                                operation: "delete",
+                                                type: 1
+                                              });
+                                            }
+                                          }}
+                                          loading={cartOperationLoading[selectedServiceItem.id]}
+                                          className="bg-red-500 hover:bg-red-600"
+                                        >
+                                          <Minus className="w-3 md:w-4 h-3 md:h-4" />
+                                        </CartButton>
+
+                                        <span className="w-6 md:w-8 text-center font-bold text-sm md:text-base">
+                                          {selectedServiceItem.quantity}
+                                        </span>
+
+                                        <CartButton
+                                          onClick={e => {
+                                            e.stopPropagation();
+                                            handleCartAction({
+                                              serviceId: selectedServiceItem.id,
+                                              operation: "add",
+                                              currentQuantity: selectedServiceItem.quantity,
+                                              type: "2"
+                                            });
+                                          }}
+                                          loading={cartOperationLoading[selectedServiceItem.id]}
+                                          className="bg-green-500 hover:bg-green-600"
+                                        >
+                                          <Plus className="w-3 md:w-4 h-3 md:h-4" />
+                                        </CartButton>
+                                      </div>
+
+                                      <CartButton
+                                        onClick={() =>
+                                          handleCartAction({ serviceId: selectedServiceItem.id, operation: "remove" })
+                                        }
+                                        loading={cartOperationLoading[selectedServiceItem.id]}
+                                        className="bg-red-500 hover:bg-red-600"
                                       >
-                                        <Minus className="w-3 md:w-4 h-3 md:h-4" />
-                                      </button>
-                                      <span className="w-6 md:w-8 text-center font-bold text-sm md:text-base">{selectedServiceItem.quantity}</span>
-                                      <button
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          updateServiceQuantity(selectedServiceItem.id, 1);
-                                        }}
-                                        className="w-6 h-6 md:w-7 md:h-7 rounded-full bg-green-500 hover:bg-green-600 text-white flex items-center justify-center transition-all"
-                                      >
-                                        <Plus className="w-3 md:w-4 h-3 md:h-4" />
-                                      </button>
+                                        <X className="w-3 md:w-4 h-3 md:h-4" />
+                                      </CartButton>
                                     </div>
-
-                                    <button
-                                      onClick={() => removeService(selectedServiceItem.id)}
-                                      className="w-6 h-6 md:w-7 md:h-7 rounded-full bg-red-500 hover:bg-red-600 text-white flex items-center justify-center transition-all"
-                                    >
-                                      <X className="w-3 md:w-4 h-3 md:h-4" />
-                                    </button>
                                   </div>
                                 </div>
-                              </div>
-                            ))}
+                              ))}
                           </div>
                         </div>
                       )}
+
+
 
                       {/* Available Services */}
                       <div>
@@ -792,7 +1109,13 @@ const handleSubmit = async (e) => {
                             .map((apiService) => (
                               <div
                                 key={apiService.id}
-                                onClick={() => handleApiServiceToggle(apiService)}
+                                onClick={() => {
+                                  handleCartAction({
+                                    serviceId: apiService.id,
+                                    operation: "add",
+                                    currentQuantity: apiService.quantity
+                                  });
+                                }}
                                 className="group relative p-3 md:p-4 border-2 border-gray-200 hover:border-blue-400 hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 rounded-xl md:rounded-2xl cursor-pointer transition-all duration-300 w-full"
                               >
                                 <div className="flex items-center space-x-2 md:space-x-3">
@@ -820,9 +1143,12 @@ const handleSubmit = async (e) => {
                                     </div>
                                   </div>
 
-                                  {/* Add button */}
                                   <div className="w-8 h-8 md:w-9 md:h-9 rounded-full bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-110">
-                                    <Plus className="w-4 md:w-5 h-4 md:h-5" />
+                                    {cartOperationLoading[apiService.id] ? (
+                                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                    ) : (
+                                      <Plus className="w-4 md:w-5 h-4 md:h-5" />
+                                    )}
                                   </div>
                                 </div>
                               </div>
@@ -854,7 +1180,7 @@ const handleSubmit = async (e) => {
                                 <div className="flex items-center space-x-2">
                                   <span className="text-xs md:text-sm font-bold">₹{service.price * service.quantity}</span>
                                   <button
-                                    onClick={() => removeService(service.id)}
+                                    onClick={() => handleCartAction({ serviceId: service.id, operation: "remove" })}
                                     className="text-red-500 hover:text-red-600 transition-colors"
                                   >
                                     <Trash2 className="w-3 md:w-4 h-3 md:h-4" />
@@ -902,9 +1228,7 @@ const handleSubmit = async (e) => {
                   )}
                 </div>
               ) : (
-                // Step 2: Booking Details
                 <div className="space-y-4 md:space-y-6">
-                  {/* Back Button */}
                   <button
                     onClick={handleBackToServices}
                     className="flex items-center space-x-2 text-blue-600 hover:text-blue-700 font-medium bg-blue-50 hover:bg-blue-100 px-3 md:px-4 py-1.5 md:py-2 rounded-lg transition-all duration-300 text-sm md:text-base"
@@ -913,7 +1237,6 @@ const handleSubmit = async (e) => {
                     <span>Back to services</span>
                   </button>
 
-                  {/* Selected Services Summary */}
                   <div className="bg-gradient-to-r from-blue-50 via-purple-50 to-pink-50 rounded-xl md:rounded-2xl p-4 md:p-6 border border-blue-100">
                     <h4 className="font-bold text-base md:text-lg text-gray-900 mb-3">Selected Services</h4>
                     <div className="space-y-2">
@@ -951,7 +1274,6 @@ const handleSubmit = async (e) => {
                     </div>
                   </div>
 
-                  {/* Date & Time Selection */}
                   <div className="bg-white rounded-xl md:rounded-2xl p-4 md:p-6 border border-gray-200 shadow-sm">
                     <h5 className="text-base md:text-lg font-bold text-gray-900 mb-3 md:mb-4 flex items-center">
                       <Calendar className="w-4 md:w-5 h-4 md:h-5 text-blue-600 mr-2" />
@@ -963,7 +1285,7 @@ const handleSubmit = async (e) => {
                         <label className="block text-xs md:text-sm font-medium text-gray-700 mb-2">Select Date</label>
                         <input
                           type="date"
-                          min={getTodayDate()}   // ab aaj ki date bhi select hogi
+                          min={getTodayDate()}
                           value={selectedDate}
                           onChange={(e) => setSelectedDate(e.target.value)}
                           className="w-full p-2.5 md:p-3 border-2 border-gray-200 rounded-xl focus:border-blue-400 focus:outline-none transition-all duration-300 text-gray-700 font-medium text-sm md:text-base"
@@ -988,14 +1310,12 @@ const handleSubmit = async (e) => {
                               </option>
                             ))}
                           </select>
-
                           <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 md:w-5 h-4 md:h-5 text-gray-400 pointer-events-none" />
                         </div>
                       </div>
                     </div>
                   </div>
 
-                  {/* Address Selection */}
                   <div className="bg-white rounded-xl md:rounded-2xl p-4 md:p-6 border border-gray-200 shadow-sm">
                     <div className="flex items-center justify-between mb-3 md:mb-4">
                       <h5 className="text-base md:text-lg font-bold text-gray-900 flex items-center">
@@ -1011,7 +1331,6 @@ const handleSubmit = async (e) => {
                       </button>
                     </div>
 
-                    {/* Saved Addresses */}
                     <div className="space-y-2 md:space-y-3 mb-4">
                       {recentAddress.map((address) => {
                         const AddressIcon = getAddressIcon(address.type);
@@ -1051,125 +1370,138 @@ const handleSubmit = async (e) => {
                       })}
                     </div>
 
-                    {/* Add New Address Form */}
                     {showAddressForm && (
-                       <form
-      onSubmit={handleSubmit}
-      className="w-full space-y-4 bg-white p-4 rounded-xl shadow"
-    >
-      <h3 className="text-lg font-semibold">Address Details</h3>
+                      <form
+                        onSubmit={handleSubmit}
+                        className="w-full space-y-4 bg-gray-50 p-4 rounded-xl shadow"
+                      >
+                        <h3 className="text-lg font-semibold">Add New Address</h3>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <input
-          id="name"
-          type="text"
-          placeholder="Name"
-          required
-          value={formData.name}
-          onChange={handleInputChange}
-          className="p-3 border-2 rounded-lg focus:border-blue-500 outline-none"
-        />
-        <input
-          id="phone"
-          type="text"
-          placeholder="Phone Number"
-          required
-          maxLength={10}
-          value={formData.phone}
-          onChange={handleInputChange}
-          className="p-3 border-2 rounded-lg focus:border-blue-500 outline-none"
-        />
-        <input
-          id="alt_address_mob"
-          type="text"
-          placeholder="Alternate Phone"
-          maxLength={10}
-          value={formData.alt_address_mob}
-          onChange={handleInputChange}
-          className="p-3 border-2 rounded-lg focus:border-blue-500 outline-none"
-        />
-        <input
-          id="pincode"
-          type="text"
-          placeholder="Pincode"
-          required
-          maxLength={6}
-          value={formData.pincode}
-          onChange={handleInputChange}
-          className="p-3 border-2 rounded-lg focus:border-blue-500 outline-none"
-        />
-        <input
-          id="state"
-          type="text"
-          placeholder="State"
-          required
-          value={formData.state}
-          onChange={handleInputChange}
-          className="p-3 border-2 rounded-lg focus:border-blue-500 outline-none"
-        />
-        <input
-          id="city"
-          type="text"
-          placeholder="City"
-          required
-          value={formData.city}
-          onChange={handleInputChange}
-          className="p-3 border-2 rounded-lg focus:border-blue-500 outline-none"
-        />
-        <input
-          id="houseNo"
-          type="text"
-          placeholder="House No"
-          required
-          value={formData.houseNo}
-          onChange={handleInputChange}
-          className="p-3 border-2 rounded-lg focus:border-blue-500 outline-none"
-        />
-        <input
-          id="street"
-          type="text"
-          placeholder="Street"
-          required
-          value={formData.street}
-          onChange={handleInputChange}
-          className="p-3 border-2 rounded-lg focus:border-blue-500 outline-none"
-        />
-        <input
-          id="landmark"
-          type="text"
-          placeholder="Famous Landmark"
-          required
-          value={formData.landmark}
-          onChange={handleInputChange}
-          className="p-3 border-2 rounded-lg focus:border-blue-500 outline-none"
-        />
-        <textarea
-          id="full_address"
-          placeholder="Full Address (additional details)"
-          rows="2"
-          value={formData.full_address}
-          onChange={handleInputChange}
-          className="p-3 border-2 rounded-lg focus:border-blue-500 outline-none md:col-span-2"
-        />
-      </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <input
+                            id="name"
+                            type="text"
+                            placeholder="Name"
+                            required
+                            value={formData.name}
+                            onChange={handleInputChange}
+                            className="p-3 border-2 rounded-lg focus:border-blue-500 outline-none"
+                          />
+                          <input
+                            id="phone"
+                            type="text"
+                            placeholder="Phone Number"
+                            required
+                            maxLength={10}
+                            value={formData.phone}
+                            onChange={handleInputChange}
+                            className="p-3 border-2 rounded-lg focus:border-blue-500 outline-none"
+                          />
+                          <input
+                            id="alt_address_mob"
+                            type="text"
+                            placeholder="Alternate Phone"
+                            maxLength={10}
+                            value={formData.alt_address_mob}
+                            onChange={handleInputChange}
+                            className="p-3 border-2 rounded-lg focus:border-blue-500 outline-none"
+                          />
+                          <input
+                            id="pincode"
+                            type="text"
+                            placeholder="Pincode"
+                            required
+                            maxLength={6}
+                            value={formData.pincode}
+                            onChange={handleInputChange}
+                            className="p-3 border-2 rounded-lg focus:border-blue-500 outline-none"
+                          />
+                          <input
+                            id="state"
+                            type="text"
+                            placeholder="State"
+                            required
+                            value={formData.state}
+                            onChange={handleInputChange}
+                            className="p-3 border-2 rounded-lg focus:border-blue-500 outline-none"
+                          />
+                          <input
+                            id="city"
+                            type="text"
+                            placeholder="City"
+                            required
+                            value={formData.city}
+                            onChange={handleInputChange}
+                            className="p-3 border-2 rounded-lg focus:border-blue-500 outline-none"
+                          />
+                          <input
+                            id="houseNo"
+                            type="text"
+                            placeholder="House No"
+                            required
+                            value={formData.houseNo}
+                            onChange={handleInputChange}
+                            className="p-3 border-2 rounded-lg focus:border-blue-500 outline-none"
+                          />
+                          <input
+                            id="street"
+                            type="text"
+                            placeholder="Street"
+                            required
+                            value={formData.street}
+                            onChange={handleInputChange}
+                            className="p-3 border-2 rounded-lg focus:border-blue-500 outline-none"
+                          />
+                          <input
+                            id="landmark"
+                            type="text"
+                            placeholder="Famous Landmark"
+                            required
+                            value={formData.landmark}
+                            onChange={handleInputChange}
+                            className="p-3 border-2 rounded-lg focus:border-blue-500 outline-none"
+                          />
+                          <select
+                            id="home_office"
+                            value={formData.home_office}
+                            onChange={handleInputChange}
+                            className="p-3 border-2 rounded-lg focus:border-blue-500 outline-none"
+                          >
+                            <option value="home">Home</option>
+                            <option value="work">Work</option>
+                            <option value="other">Other</option>
+                          </select>
+                          <textarea
+                            id="full_address"
+                            placeholder="Full Address (additional details)"
+                            rows="2"
+                            value={formData.full_address}
+                            onChange={handleInputChange}
+                            className="p-3 border-2 rounded-lg focus:border-blue-500 outline-none md:col-span-2"
+                          />
+                        </div>
 
-      {message && <p className="text-red-500 text-sm">{message}</p>}
+                        {message && <p className="text-red-500 text-sm">{message}</p>}
 
-      <div className="flex justify-end gap-3 pt-4">
-        <button
-          type="button"
-          onClick={handleClose}
-          className="px-4 py-2 border rounded-lg text-gray-600 hover:bg-gray-100"
-        >
-          Cancel
-        </button>
-       
-      </div>
-    </form>
+                        <div className="flex justify-end gap-3 pt-4">
+                          <button
+                            type="button"
+                            onClick={() => setShowAddressForm(false)}
+                            className="px-4 py-2 border rounded-lg text-gray-600 hover:bg-gray-100"
+                          >
+                            Cancel
+                          </button>
+                          <button
+                            type="submit"
+                            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                          >
+                            Save Address
+                          </button>
+                        </div>
+                      </form>
                     )}
                   </div>
 
-                  {/* Trust Badges - Hide on mobile for space */}
                   <div className="hidden md:grid grid-cols-3 gap-4">
                     <div className="bg-white rounded-xl p-4 text-center border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
                       <Shield className="w-8 h-8 text-green-500 mx-auto mb-2" />
@@ -1185,10 +1517,9 @@ const handleSubmit = async (e) => {
                     </div>
                   </div>
 
-                  {/* Checkout Button */}
                   <div className="sticky bottom-0 bg-white pt-3 md:pt-4 border-t border-gray-100">
                     <button
-                      onClick={handleCheckout}
+                      onClick={handlePaymentCompleted}
                       disabled={!selectedDate || !selectedTime || !selectedAddress || selectedApiServices.length === 0}
                       className={`w-full py-3 md:py-4 px-4 md:px-6 rounded-xl md:rounded-2xl transition-all duration-300 font-bold text-sm md:text-lg flex items-center justify-center space-x-2 md:space-x-3 transform hover:scale-105 shadow-lg ${selectedDate && selectedTime && selectedAddress && selectedApiServices.length > 0
                         ? 'bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white hover:shadow-2xl'
@@ -1210,7 +1541,11 @@ const handleSubmit = async (e) => {
         </div>
       )}
 
-      {/* Enhanced Styles */}
+      <LoginModal
+        open={openLoginModal}
+        onClose={() => setOpenLoginModal(false)}
+      // onLoginSuccess={onLoginSuccess}
+      />
       <style jsx>{`
         @keyframes slideUp {
           from {
@@ -1319,13 +1654,6 @@ const handleSubmit = async (e) => {
           }
         }
       `}</style>
-      <LoginModal
-        open={openLoginModal}
-        onClose={() => setOpenLoginModal(false)}
-      // onLoginSuccess={onLoginSuccess}
-      />
-
-      
     </>
   );
 };

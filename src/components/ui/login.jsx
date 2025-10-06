@@ -55,105 +55,61 @@ const LoginModal = ({ open, onClose, onLoginSuccess }) => {
   }, []);
 
   // Send OTP
-  // const sendOTP = useCallback(async (resend = false) => {
-  //   const { mobileNumber } = state;
+  const sendOTP = useCallback(async (resend = false) => {
+    const { mobileNumber } = state;
 
-  //   if (!mobileNumber || !/^\d{10}$/.test(mobileNumber)) {
-  //     setState(prev => ({
-  //       ...prev,
-  //       error: "Please enter a valid 10-digit mobile number"
-  //     }));
-  //     return;
-  //   }
-
-  //   setState(prev => ({
-  //     ...prev,
-  //     isSubmitting: true,
-  //     error: "",
-  //     successMessage: ""
-  //   }));
-
-  //   try {
-  //     const response = await fetch(
-  //       "https://waterpurifierservicecenter.in/customer/ro_customer/roservice_sendotp.php",
-  //       {
-  //         method: "POST",
-  //         headers: { "Content-Type": "application/json" },
-  //         body: JSON.stringify({ phoneNumber: mobileNumber }),
-  //       }
-  //     );
-
-  //     if (!response.ok) {
-  //       throw new Error(`HTTP error! status: ${response.status}`);
-  //     }
-
-  //     const data = await response.json();
-
-  //     if (data.error === false) {
-  //       setState(prev => ({
-  //         ...prev,
-  //         successMessage: "OTP sent successfully! Please check your messages.",
-  //         step: resend ? prev.step : "otp",
-  //         resendTime: 30,
-  //         isSubmitting: false
-  //       }));
-  //     } else {
-  //       throw new Error(data.msg || "Failed to send OTP");
-  //     }
-  //   } catch (err) {
-  //     console.error("Send OTP Error:", err);
-  //     setState(prev => ({
-  //       ...prev,
-  //       error: err.message || "Failed to send OTP. Please try again.",
-  //       isSubmitting: false
-  //     }));
-  //   }
-  // }, [state.mobileNumber]);
-const sendOTP = useCallback(async (resend = false) => {
-  const { mobileNumber } = state;
-
-  if (!mobileNumber || !/^\d{10}$/.test(mobileNumber)) {
-    setState(prev => ({
-      ...prev,
-      error: "Please enter a valid 10-digit mobile number"
-    }));
-    return;
-  }
-
-  setState(prev => ({
-    ...prev,
-    isSubmitting: true,
-    error: "",
-    successMessage: ""
-  }));
-
-  try {
-    // ✅ Test mode: hardcoded OTP
-    const data = {
-      error: false,
-      otp: "1234" // <-- fixed OTP for testing
-    };
-
-    if (data.error === false) {
+    if (!mobileNumber || !/^\d{10}$/.test(mobileNumber)) {
       setState(prev => ({
         ...prev,
-        successMessage: `OTP sent successfully! (Use ${data.otp} for testing)`,
-        step: resend ? prev.step : "otp",
-        resendTime: 30,
-        isSubmitting: false
+        error: "Please enter a valid 10-digit mobile number"
       }));
-    } else {
-      throw new Error(data.msg || "Failed to send OTP");
+      return;
     }
-  } catch (err) {
-    console.error("Send OTP Error:", err);
+
     setState(prev => ({
       ...prev,
-      error: err.message || "Failed to send OTP. Please try again.",
-      isSubmitting: false
+      isSubmitting: true,
+      error: "",
+      successMessage: ""
     }));
-  }
-}, [state.mobileNumber]);
+
+    try {
+      const response = await fetch(
+        "https://waterpurifierservicecenter.in/customer/ro_customer/roservice_sendotp.php",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ phoneNumber: mobileNumber }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      if (data.error === false) {
+        setState(prev => ({
+          ...prev,
+          successMessage: "OTP sent successfully! Please check your messages.",
+          step: resend ? prev.step : "otp",
+          resendTime: 30,
+          isSubmitting: false
+        }));
+      } else {
+        throw new Error(data.msg || "Failed to send OTP");
+      }
+    } catch (err) {
+      console.error("Send OTP Error:", err);
+      setState(prev => ({
+        ...prev,
+        error: err.message || "Failed to send OTP. Please try again.",
+        isSubmitting: false
+      }));
+    }
+  }, [state.mobileNumber]);
+
 
   // Handle OTP input
   const handleOtpChange = useCallback((index, value) => {
@@ -186,113 +142,16 @@ const sendOTP = useCallback(async (resend = false) => {
   }, [state.otpDigits]);
 
 // Verify OTP
-// const verifyOTP = useCallback(async () => {
-//   const otp = state.otpDigits.join('');
-//   if (!otp || !/^\d{4}$/.test(otp)) {
-//     setState(prev => ({
-//       ...prev,
-//       error: "Please enter a valid 4-digit OTP"
-//     }));
-//     return;
-//   }
-
-//   setState(prev => ({
-//     ...prev,
-//     isSubmitting: true,
-//     error: "",
-//     successMessage: ""
-//   }));
-
-//   try {
-//     const response = await fetch(
-//       "https://waterpurifierservicecenter.in/customer/ro_customer/service_otp_verify.php",
-//       {
-//         method: "POST",
-//         headers: { "Content-Type": "application/json" },
-//         body: JSON.stringify({
-//           phoneNumber: state.mobileNumber,
-//           newOtp: otp
-//         }),
-//       }
-//     );
-
-//     if (!response.ok) {
-//       throw new Error(`HTTP error! status: ${response.status}`);
-//     }
-
-//     const data = await response.json();
-
-//     if (data.error === false) {
-//       // ✅ Save user data
-//       const userDataToStore = {
-//         userPhone: state.mobileNumber,
-//         userToken: 'verified',
-//         userName: data.name || '',
-//         userEmail: data.email || '',
-//         customer_id: data.c_id,
-//         RecentAddress: JSON.stringify(data.address || []),
-//         checkoutState: JSON.stringify(data.AllCartDetails || []),
-//         cart_total_price: data.total_price || 0
-//       };
-
-//       Object.entries(userDataToStore).forEach(([key, value]) => {
-//         if (value) localStorage.setItem(key, String(value));
-//       });
-
-//       handleLoginSuccess({
-//         id: data.c_id,
-//         phone: state.mobileNumber,
-//         name: data.name || "Customer",
-//         email: data.email || "",
-//       });
-
-//       setState(prev => ({
-//         ...prev,
-//         successMessage: `Welcome back ${data.name || ''}! You've been successfully logged in.`,
-//         isSubmitting: false
-//       }));
-
-//       // ✅ Close modal
-//       onClose();
-
-//       // ✅ Reload page after 1s
-//       setTimeout(() => {
-//         window.location.reload();
-//       }, 1000);
-
-//     } else {
-//       // ✅ OTP galat hone par sirf error set hoga
-//       setState(prev => ({
-//         ...prev,
-//         error: data.msg || "OTP verification failed",
-//         isSubmitting: false
-//       }));
-//       return;
-//     }
-//   } catch (err) {
-//     console.error("Verify OTP Error:", err);
-//     setState(prev => ({
-//       ...prev,
-//       error: err.message || "OTP verification failed. Please try again.",
-//       isSubmitting: false
-//     }));
-//   }
-// }, [state.mobileNumber, state.otpDigits, onLoginSuccess, onClose, resetForm]);
-
 const verifyOTP = useCallback(async () => {
   const otp = state.otpDigits.join('');
-
-  // ✅ Check against hardcoded OTP
-  if (otp !== "1234") {
+  if (!otp || !/^\d{4}$/.test(otp)) {
     setState(prev => ({
       ...prev,
-      error: "OTP does not match! Please enter 1234",
-      isSubmitting: false
+      error: "Please enter a valid 4-digit OTP"
     }));
     return;
   }
 
-  // ✅ Success flow without API call
   setState(prev => ({
     ...prev,
     isSubmitting: true,
@@ -301,62 +160,159 @@ const verifyOTP = useCallback(async () => {
   }));
 
   try {
-    // 👉 Dummy response for testing
-    const data = {
-      error: false,
-      c_id: "TEST123",
-      name: "Demo User",
-      email: "demo@example.com",
-      address: [],
-      AllCartDetails: [],
-      total_price: 0
-    };
+    const response = await fetch(
+      "https://waterpurifierservicecenter.in/customer/ro_customer/service_otp_verify.php",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          phoneNumber: state.mobileNumber,
+          newOtp: otp
+        }),
+      }
+    );
 
-    // ✅ Save user data in localStorage
-    const userDataToStore = {
-      userPhone: "9999999999",
-      userToken: 'verified',
-      userName: data.name,
-      userEmail: data.email,
-      customer_id: data.c_id,
-      RecentAddress: JSON.stringify(data.address),
-      checkoutState: JSON.stringify(data.AllCartDetails),
-      cart_total_price: data.total_price
-    };
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
 
-    Object.entries(userDataToStore).forEach(([key, value]) => {
-      if (value) localStorage.setItem(key, String(value));
-    });
+    const data = await response.json();
 
-    handleLoginSuccess({
-      id: data.c_id,
-      phone: state.mobileNumber,
-      name: data.name,
-      email: data.email,
-    });
+    if (data.error === false) {
+      // ✅ Save user data
+      const userDataToStore = {
+        userPhone: state.mobileNumber,
+        userToken: 'verified',
+        userName: data.name || '',
+        userEmail: data.email || '',
+        customer_id: data.c_id,
+        RecentAddress: JSON.stringify(data.address || []),
+        checkoutState: JSON.stringify(data.AllCartDetails || []),
+        cart_total_price: data.total_price || 0
+      };
 
-    setState(prev => ({
-      ...prev,
-      successMessage: `Welcome back ${data.name}! You've been successfully logged in.`,
-      isSubmitting: false
-    }));
+      Object.entries(userDataToStore).forEach(([key, value]) => {
+        if (value) localStorage.setItem(key, String(value));
+      });
 
-    onClose();
+      handleLoginSuccess({
+        id: data.c_id,
+        phone: state.mobileNumber,
+        name: data.name || "Customer",
+        email: data.email || "",
+      });
 
-    // ✅ Reload page after 1 sec
-    setTimeout(() => {
-      window.location.reload();
-    }, 100);
+      setState(prev => ({
+        ...prev,
+        successMessage: `Welcome back ${data.name || ''}! You've been successfully logged in.`,
+        isSubmitting: false
+      }));
 
+      // ✅ Close modal
+      onClose();
+
+      // ✅ Reload page after 1s
+      // setTimeout(() => {
+      //   window.location.reload();
+      // }, 1000);
+
+    } else {
+      // ✅ OTP galat hone par sirf error set hoga
+      setState(prev => ({
+        ...prev,
+        error: data.msg || "OTP verification failed",
+        isSubmitting: false
+      }));
+      return;
+    }
   } catch (err) {
     console.error("Verify OTP Error:", err);
     setState(prev => ({
       ...prev,
-      error: "Unexpected error. Please try again.",
+      error: err.message || "OTP verification failed. Please try again.",
       isSubmitting: false
     }));
   }
 }, [state.mobileNumber, state.otpDigits, onLoginSuccess, onClose, resetForm]);
+
+// const verifyOTP = useCallback(async () => {
+//   const otp = state.otpDigits.join('');
+
+//   // ✅ Check against hardcoded OTP
+//   if (otp !== "1234") {
+//     setState(prev => ({
+//       ...prev,
+//       error: "OTP does not match! Please enter 1234",
+//       isSubmitting: false
+//     }));
+//     return;
+//   }
+
+//   // ✅ Success flow without API call
+//   setState(prev => ({
+//     ...prev,
+//     isSubmitting: true,
+//     error: "",
+//     successMessage: ""
+//   }));
+
+//   try {
+//     // 👉 Dummy response for testing
+//     const data = {
+//       error: false,
+//       c_id: "TEST123",
+//       name: "Demo User",
+//       email: "demo@example.com",
+//       address: [],
+//       AllCartDetails: [],
+//       total_price: 0
+//     };
+
+//     // ✅ Save user data in localStorage
+//     const userDataToStore = {
+//       userPhone: "9999999999",
+//       userToken: 'verified',
+//       userName: data.name,
+//       userEmail: data.email,
+//       customer_id: data.c_id,
+//       RecentAddress: JSON.stringify(data.address),
+//       checkoutState: JSON.stringify(data.AllCartDetails),
+//       cart_total_price: data.total_price
+//     };
+
+//     Object.entries(userDataToStore).forEach(([key, value]) => {
+//       if (value) localStorage.setItem(key, String(value));
+//     });
+
+//     handleLoginSuccess({
+//       id: data.c_id,
+//       phone: state.mobileNumber,
+//       name: data.name,
+//       email: data.email,
+//     });
+
+//     setState(prev => ({
+//       ...prev,
+//       successMessage: `Welcome back ${data.name}! You've been successfully logged in.`,
+//       isSubmitting: false
+//     }));
+
+//     onClose();
+
+//     // ✅ Reload page after 1 sec
+//     setTimeout(() => {
+//       window.location.reload();
+//     }, 100);
+
+//   } catch (err) {
+//     console.error("Verify OTP Error:", err);
+//     setState(prev => ({
+//       ...prev,
+//       error: "Unexpected error. Please try again.",
+//       isSubmitting: false
+//     }));
+//   }
+// }, [state.mobileNumber, state.otpDigits, onLoginSuccess, onClose, resetForm]);
 
   // Handle form submission
   const handleSubmit = useCallback((e) => {

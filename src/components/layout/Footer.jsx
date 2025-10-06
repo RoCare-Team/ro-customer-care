@@ -1,66 +1,41 @@
 "use client";
 
-import {
-  Facebook,
-  Twitter,
-  Linkedin,
-  Instagram,
-} from "lucide-react";
+import { Facebook, Twitter, Linkedin, Instagram } from "lucide-react";
 
 const Footer = () => {
   return (
     <footer className="bg-[#2d1457] text-white pt-8">
       {/* Top Section */}
-      <div className="max-w-7xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-6 pb-6">
+      <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-6 pb-6">
         {/* Useful Links */}
         <div>
           <h2 className="font-bold text-lg mb-3">Useful Links</h2>
           <ul className="space-y-1 text-sm">
-            <li><a href="#" className="hover:underline">Kent Service</a></li>
-            <li><a href="#" className="hover:underline">Pureit Service</a></li>
-            <li><a href="#" className="hover:underline">Livpure Service</a></li>
-            <li><a href="#" className="hover:underline">Customer Care</a></li>
-            <li><a href="#" className="hover:underline"> </a></li>
+            <li><a href="#" className="hover:underline">RO Maintenance</a></li>
             <li><a href="#" className="hover:underline">AMC Plans</a></li>
             <li><a href="#" className="hover:underline">Repair Service</a></li>
-          </ul>
-        </div>
-        {/* RO Service Cities */}
-        <div>
-          <h2 className="font-bold text-lg mb-3">RO Service Cities</h2>
-          <ul className="space-y-1 text-sm">
-            <li><a href="#" className="hover:underline">Delhi</a></li>
-            <li><a href="#" className="hover:underline">Gurgaon</a></li>
-            <li><a href="#" className="hover:underline">Noida</a></li>
-            <li><a href="#" className="hover:underline">Mumbai</a></li>
-            <li><a href="#" className="hover:underline">Bangalore</a></li>
-            <li><a href="#" className="hover:underline">Pune</a></li>
-            <li><a href="#" className="hover:underline">Hyderabad</a></li>
+            <li><a href="#" className="hover:underline">Customer Care</a></li>
           </ul>
         </div>
 
-        {/* Kent RO Service Cities */}
+        {/* Services / Resources */}
         <div>
-          <h2 className="font-bold text-lg mb-3">Kent RO Cities</h2>
+          <h2 className="font-bold text-lg mb-3">Customer Care Services</h2>
           <ul className="space-y-1 text-sm">
-            <li><a href="#" className="hover:underline">Lucknow</a></li>
-            <li><a href="#" className="hover:underline">Chandigarh</a></li>
-            <li><a href="#" className="hover:underline">Jaipur</a></li>
-            <li><a href="#" className="hover:underline">Indore</a></li>
-            <li><a href="#" className="hover:underline">Kolkata</a></li>
-            <li><a href="#" className="hover:underline">Ahmedabad</a></li>
-            <li><a href="#" className="hover:underline">Surat</a></li>
+            <li><a href="#" className="hover:underline">Book a Service</a></li>
+            <li><a href="#" className="hover:underline">Check Service Status</a></li>
+            <li><a href="#" className="hover:underline">Request AMC</a></li>
+            <li><a href="#" className="hover:underline">FAQs</a></li>
           </ul>
         </div>
 
-        {/* Address & Social */}
+        {/* Contact & Social */}
         <div>
           <h2 className="font-bold text-lg mb-3">Contact Us</h2>
           <p className="text-sm leading-5">
             Unit No. 831, 8th Floor, JMD MEGAPOLIS, <br />
             Sector 48, Gurugram, Haryana 122018
           </p>
-          {/* Social Media Icons */}
           <div className="flex space-x-3 mt-3">
             <a href="#" className="bg-blue-600 hover:bg-blue-700 p-2 rounded-full">
               <Facebook size={16} />

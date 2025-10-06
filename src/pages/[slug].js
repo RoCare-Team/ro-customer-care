@@ -10,6 +10,10 @@ import Navbar from "@/components/layout/Navbar";
 import Image from "next/image";
 import RoServiceCare from "../../public/images/ro-care-service.png"
 import { useAuth } from "@/contexts/userAuth";
+import Link from "next/link";
+import FaqSectionRO from "@/components/ui/customerReview";
+import CheckoutPage from "./checkout";
+import OurBrandSection from "@/components/ui/ourBrandServe";
 
 // Service categories mapping with "All" option
 const serviceCategories = [
@@ -36,30 +40,93 @@ export default function ROServicePage() {
   const [invalid, setInvalid] = useState(false);
   const { isLoggedIn, handleLoginSuccess } = useAuth();
 
-  console.log("isLoggedIn",isLoggedIn);
-  
 
+  // const cityWase
+
+  
+  
+  
   // Ref for auto-scroll
   const servicesRef = useRef(null);
+  // const slugCity = slug ? slug.toString().replace("brands");
 
   // City data
-  const cities = [
-    'Delhi', 'Mumbai', 'Agra', 'Bangalore', 'Chennai', 'Kolkata', 
-    'Hyderabad', 'Pune', 'Ahmedabad', 'Jaipur', 'Surat', 'Lucknow',
-    'Kanpur', 'Nagpur', 'Indore', 'Thane', 'Bhopal', 'Visakhapatnam',
-    'Pimpri-Chinchwad', 'Patna'
+const popularCities = [
+    "Gurgaon",
+    "Delhi",
+    "Mumbai",
+    "Bangalore",
+    "Hyderabad",
+    "Ahmedabad",
+    "Chennai",
+    "Kolkata",
+    "Noida",
+    "Ghaziabad",
+    "Faridabad",
+    "Surat",
+    "Pune",
+    "Jaipur",
+    "Lucknow",
+    "Kanpur",
+    "Thane",
+    "Patna",
+    "Indore",
+    "Bhopal",
+    "Ranchi",
+    "Greater Noida",
+    "Meerut",
+    "Varanasi",
+    "Allahabad",
+    "Prayagraj",
+    "Chandigarh",
   ];
+
+
+//   function capitalizeWords(str) {
+//   return str
+//     .split("-")
+//     .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+//     .join(" ");
+// }
+
+// // Example slug
+// const parts = slug?.split("-");
+
+// const brand = capitalizeWords(parts[0]); // "Kent"
+// const category = capitalizeWords(parts.slice(1, parts.length - 1).join("-")); // "Customer Care"
+// const citys = capitalizeWords(parts.slice(-1).join("-")); // "Delhi"
+
+// console.log("Brand:", brand);       // Kent
+// console.log("Category:", category); // Customer Care
+// console.log("City:", citys);         // Delhi
+
 
   // Load cart data from localStorage
   const loadCartFromStorage = useCallback(() => {
     try {
       const storedCart = localStorage.getItem("checkoutState");
+
       if (storedCart) {
-        const cartDetails = JSON.parse(storedCart);
-        
+        // Check if storedCart is a valid JSON string
+        let cartDetails;
+        try {
+          cartDetails = JSON.parse(storedCart);
+        } catch (parseError) {
+          console.warn("checkoutState in localStorage is invalid JSON:", storedCart);
+          setCartData([]);
+          return;
+        }
+
+        // Ensure cartDetails is an object or array
+        if (typeof cartDetails !== "object" || cartDetails === null) {
+          console.warn("checkoutState is not a valid object or array:", cartDetails);
+          setCartData([]);
+          return;
+        }
+
         // Extract cart items from the API response structure
         const cartItems = [];
-        
+
         if (Array.isArray(cartDetails)) {
           // Handle array format
           cartDetails.forEach(leadType => {
@@ -71,9 +138,8 @@ export default function ROServicePage() {
           // Handle single object format
           cartItems.push(...cartDetails.cart_dtls);
         }
-        
+
         setCartData(cartItems);
-        console.log("Cart loaded from storage:", cartItems);
       } else {
         setCartData([]);
       }
@@ -83,27 +149,28 @@ export default function ROServicePage() {
     }
   }, []);
 
+
   // City validation effect
-  useEffect(() => {
-    if (!slug) return;
+  // useEffect(() => {
+  //   if (!slug) return;
 
-    if (slug === "ro-service") {
-      setCity("");
-      setInvalid(false);
-      return;
-    }
+  //   if (slug === "ro-service") {
+  //     setCity("");
+  //     setInvalid(false);
+  //     return;
+  //   }
 
-    const cityFromSlug = slug.replace("ro-service-", "").toLowerCase();
-    const matchedCity = cities.find(c => c.toLowerCase() === cityFromSlug);
+  //   const cityFromSlug = slug.replace("ro-service-", "").toLowerCase();
+  //   const matchedCity = cities.find(c => c.toLowerCase() === cityFromSlug);
 
-    if (matchedCity) {
-      setCity(matchedCity);
-      setInvalid(false);
-    } else {
-      setCity("");
-      setInvalid(true);
-    }
-  }, [slug]);
+  //   if (matchedCity) {
+  //     setCity(matchedCity);
+  //     setInvalid(false);
+  //   } else {
+  //     setCity("");
+  //     setInvalid(true);
+  //   }
+  // }, [slug]);
 
   // Load cart on component mount and when cartLoaded changes
   useEffect(() => {
@@ -160,6 +227,25 @@ export default function ROServicePage() {
     fetchServices();
   }, [fetchServices]);
 
+  // string ke har word ka first letter capital
+function capitalizeWords(str) {
+  if (!str) return "";
+  return str
+    .split("-")      // ya split(" ") agar space se words hain
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(" ");
+}
+
+function safeCapitalize(str) {
+  if (!str) return "";
+  return str
+    .split("-")
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(" ");
+}
+
+
+
   // Handle cart actions
   const handleCartAction = useCallback(async ({ serviceId, operation, currentQuantity = 0 }) => {
     if (!isLoggedIn) {
@@ -181,7 +267,7 @@ export default function ROServicePage() {
         type: operation === "remove" ? "delete" : operation,
         cid: customerId,
         quantity: operation === "add" ? currentQuantity + 1
-          : operation === "decrement" ? Math.max(0, currentQuantity - 1) : 0,
+          : operation === "delete" ? Math.max(0, currentQuantity - 1) : 0,
         source: 'Ro Customer Service Care'
       };
 
@@ -198,12 +284,13 @@ export default function ROServicePage() {
 
       if (res.ok) {
         const data = await res.json();
+        localStorage.setItem("checkoutState", data)
         console.log("Cart API response:", data);
-        
+
         if (data.AllCartDetails) {
           localStorage.setItem("checkoutState", JSON.stringify(data.AllCartDetails));
           localStorage.setItem("cart_total_price", data.total_price || data.total_main || 0);
-          
+
           // Trigger cart reload
           setCartLoaded(prev => !prev);
         }
@@ -218,7 +305,7 @@ export default function ROServicePage() {
   // Handle login success and execute pending cart action
   const onLoginSuccess = useCallback((userData) => {
     handleLoginSuccess(userData);
-    
+
     // Execute pending cart action if exists
     if (pendingCartAction) {
       const { serviceId, operation, currentQuantity } = pendingCartAction;
@@ -228,10 +315,9 @@ export default function ROServicePage() {
   }, [handleLoginSuccess, pendingCartAction, handleCartAction]);
 
   // Add to cart handler
+  // Add to cart
   const handleAddToCart = useCallback((service) => {
-    const existingItem = cartData.find(item => 
-      item.service_id === service.id || item.service_id === service.service_id
-    );
+    const existingItem = cartData.find(item => item.service_id === service.id);
     const currentQuantity = existingItem ? parseInt(existingItem.quantity) : 0;
 
     handleCartAction({
@@ -239,48 +325,69 @@ export default function ROServicePage() {
       operation: "add",
       currentQuantity
     });
-  }, [cartData, handleCartAction]);
 
-  // Increase quantity handler
-  const handleIncreaseQty = useCallback((service) => {
-    const existingItem = cartData.find(item => 
-      item.service_id === service.id || item.service_id === service.service_id
-    );
+    if (!existingItem) {
+      // Add to local cartData for UI
+      setCartData(prev => [...prev, { service_id: service.id, quantity: 1 }]);
+    }
+  }, [cartData, handleCartAction, setCartData]);
+
+  // Increase quantity
+  const handleIncreaseQty = useCallback(async (service) => {
+    const existingItem = cartData.find(item => item.service_id === service.id);
     const currentQuantity = existingItem ? parseInt(existingItem.quantity) : 0;
 
-    handleCartAction({
-      serviceId: service.id,
-      operation: "add",
-      currentQuantity
-    });
-  }, [cartData, handleCartAction]);
+    try {
+      await handleCartAction({
+        serviceId: service.id,
+        operation: "add",
+        currentQuantity
+      });
 
-  // Decrease quantity handler
-// Decrease quantity handler
-console.log("cartData",cartData);
+      // Assume handleCartAction returns the updated cartData
+      const updatedCart = JSON.parse(localStorage.getItem("checkoutState") || "[]");
+      setCartData(updatedCart);
 
+    } catch (err) {
+      console.error(err);
+    }
+  }, [cartData, handleCartAction, setCartData]);
+
+
+  // Decrease quantity
   const handleDecreaseQty = useCallback((service) => {
-    const existingItem = cartData.find(item => 
-      item.service_id === service.id || item.service_id === service.service_id
-    );
+    const existingItem = cartData.find(item => item.service_id === service.id);
     const currentQuantity = existingItem ? parseInt(existingItem.quantity) : 0;
+
+    if (!existingItem) return;
 
     if (currentQuantity <= 1) {
-      // Remove item if current quantity is 1 or less
+      // Remove completely
       handleCartAction({
         serviceId: service.id,
         operation: "remove",
         currentQuantity: 0
       });
+
+      setCartData(prev => prev.filter(item => item.service_id !== service.id));
     } else {
-      // Decrease quantity by 1
+      // Decrease by 1
       handleCartAction({
         serviceId: service.id,
-        operation: "decrement",
-        currentQuantity: currentQuantity
+        operation: "delete",
+        currentQuantity
       });
+
+      setCartData(prev =>
+        prev.map(item =>
+          item.service_id === service.id
+            ? { ...item, quantity: item.quantity - 1 }
+            : item
+        )
+      );
     }
-  }, [cartData, handleCartAction]);
+  }, [cartData, handleCartAction, setCartData]);
+
   // Parse HTML description
   const parseDescription = (htmlString) => {
     if (!htmlString) return [];
@@ -334,11 +441,21 @@ console.log("cartData",cartData);
 
   // Helper function to check if service is in cart
   const getCartItemForService = useCallback((service) => {
-    return cartData.find(item => 
-      item.service_id === service.id || 
+    return cartData.find(item =>
+      item.service_id === service.id ||
       item.service_id === service.service_id
     );
   }, [cartData]);
+
+  
+
+
+  // const slugFilter = slug.split("-")
+  // console.log("slugFilter",slugFilter);
+  
+
+  // Service page: add to cart button or checkout buttons
+
 
   if (invalid) {
     return (
@@ -374,9 +491,11 @@ console.log("cartData",cartData);
     );
   }
 
+
+
   return (
     <>
-      <Navbar/>
+      <Navbar />
       <div className="min-h-screen bg-gray-50 mt-0 md:mt-16">
         <div className="max-w-7xl mx-auto p-6">
           <div className="grid lg:grid-cols-12 gap-6">
@@ -388,7 +507,7 @@ console.log("cartData",cartData);
                     <Check className="h-4 w-4 text-blue-600" />
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-red-500">Water Purifier Service {city}</p>
+                    <p className="text-sm font-medium text-red-500">{safeCapitalize(slug)}  {city}</p>
                     <p className="text-xs text-gray-600">@7065012902</p>
                   </div>
                 </div>
@@ -419,7 +538,7 @@ console.log("cartData",cartData);
             </div>
 
             {/* Main Content - Hero and Services - SCROLLABLE */}
-            <div className="lg:col-span-7">
+            <div className="lg:col-span-6">
               {/* Hero Section */}
               <Image
                 src={RoServiceCare}
@@ -544,7 +663,7 @@ console.log("cartData",cartData);
                                 </div>
                               </div>
 
-                              {!inCart ? (
+                              {!cartData.find(item => item.service_id === service.id) ? (
                                 <button
                                   onClick={() => handleAddToCart(service)}
                                   className="bg-blue-600 text-white text-xs sm:text-sm px-4 py-1.5 rounded-lg font-medium hover:bg-blue-700 transition-colors flex items-center gap-1"
@@ -561,7 +680,7 @@ console.log("cartData",cartData);
                                     <Minus className="h-3 w-3 sm:h-4 sm:w-4" />
                                   </button>
                                   <span className="font-medium min-w-[20px] sm:min-w-[30px] text-center text-xs sm:text-sm">
-                                    {quantity}
+                                    {cartData.find(item => item.service_id === service.id)?.quantity || 0}
                                   </span>
                                   <button
                                     onClick={() => handleIncreaseQty(service)}
@@ -571,6 +690,7 @@ console.log("cartData",cartData);
                                   </button>
                                 </div>
                               )}
+
                             </div>
                           </div>
                         </div>
@@ -582,10 +702,10 @@ console.log("cartData",cartData);
             </div>
 
             {/* Right Sidebar - Cart and Info - STICKY */}
-            <div className="lg:col-span-3">
+            <div className="lg:col-span-4">
               <div className="sticky top-20 space-y-6 max-h-[calc(100vh-6rem)] overflow-y-auto">
                 {/* Cart Section */}
-                <div className="bg-white rounded-lg shadow-sm">
+                <div className="bg-white rounded-lg shadow-sm hidden sm:block">
                   <div className="p-4 border-b border-gray-200">
                     <div className="flex items-center justify-between">
                       <h3 className="text-lg font-semibold text-gray-900">Cart</h3>
@@ -640,19 +760,23 @@ console.log("cartData",cartData);
                           );
                         })}
 
+                        {/* Cart Total and Checkout */}
                         <div className="border-t pt-4">
                           <div className="flex justify-between items-center mb-4">
                             <span className="font-semibold">Total</span>
                             <span className="text-xl font-bold text-blue-600">₹{totalPrice}</span>
                           </div>
-                          <button className="w-full bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700 transition-colors">
-                            Proceed to Checkout ({totalItems} items)
-                          </button>
+                          <Link href="/checkout">
+                            <button className="w-full bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700 transition-colors">
+                              Proceed to Checkout ({totalItems} items)
+                            </button>
+                          </Link>
                         </div>
                       </div>
                     )}
                   </div>
                 </div>
+
 
                 {/* Why Choose Us Section */}
                 <div className="bg-white rounded-lg p-4 shadow-sm">
@@ -692,17 +816,87 @@ console.log("cartData",cartData);
               </div>
             </div>
           </div>
-          <AwardCertifications/>
-          <ROServiceContent city={city}/>
+          <AwardCertifications />
+          <ROServiceContent city={slug} />
+
+          <div className="max-w-9xl mx-auto p-2">
+
+      {/* ✅ Popular Cities Section */}
+      <section className="bg-white rounded-xl shadow-md p-2">
+        <h2 className="text-2xl font-bold text-blue-600 mb-4">
+         Service in Popular Cities
+        </h2>
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+  {popularCities.map((city, idx) => {
+    // city slug
+    const slugCity = city.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+    
+    // base slug without city
+    const baseSlug = slug?.split("-").slice(0, -1).join("-"); 
+    // Agar slug me city nahi hai to baseSlug = slug
+
+    const href = `${baseSlug || slug}-${slugCity}`;
+
+    return (
+      <Link
+        key={idx}
+        href={`${href}`}
+        className="px-3 py-2 border rounded-lg bg-gray-50 hover:bg-blue-50 text-sm font-medium text-gray-700 hover:text-blue-600 transition"
+      >
+{safeCapitalize(slug)} Service {city}
+      </Link>
+    );
+  })}
+</div>
+
+      </section>
+    </div>
+              <FaqSectionRO />
+
           <BlueNearbyAreas/>
+          <OurBrandSection />
         </div>
       </div>
-      <Footer/>
+      <Footer />
       <LoginPopup
         open={openLoginModal}
         onClose={() => setOpenLoginModal(false)}
         onLoginSuccess={onLoginSuccess}
       />
+
+
+
+      {/* Mobile View Cart Button - Only for sm screens */}
+      <Link href="/checkout">
+        <button className="bg-green-600 text-white rounded-full shadow-xl flex items-center justify-center gap-4 px-6 py-3 min-w-[220px]">
+          {totalItems > 0 && (
+            <div className="fixed bottom-6 left-1/2 -translate-x-1/2 sm:block md:hidden z-50" style={{ marginBottom: "85px" }}>
+              <Link href="/checkout">
+                <button className="bg-green-600 text-white rounded-full shadow-xl flex items-center justify-center gap-4 px-6 py-3 min-w-[220px]">
+                  {/* Left circle */}
+                  <div className="w-6 h-6 bg-white rounded-full flex items-center justify-center">
+                    <ShoppingCart className="h-4 w-4 text-green-600" />
+                  </div>
+
+                  {/* Text */}
+                  <div className="text-center">
+                    <div className="font-semibold text-sm">View cart</div>
+                    <div className="text-xs font-medium">{totalItems} ITEM{totalItems !== 1 ? 'S' : ''}</div>
+                  </div>
+
+                  {/* Right circle */}
+                  <div className="w-6 h-6 bg-white rounded-full flex items-center justify-center">
+                    <svg className="h-3 w-3 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </div>
+                </button>
+              </Link>
+            </div>
+          )}
+        </button>
+      </Link>
+
     </>
   );
 }
