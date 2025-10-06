@@ -74,6 +74,17 @@ const CartButton = ({ onClick, loading, children, className }) => (
   </button>
 );
 
+const getAddressIcon = (type) => {
+  switch (type) {
+    case "home":
+      return Home;
+    case "work":
+      return Briefcase;
+    default:
+      return MapPin;
+  }
+};
+
 
 const ROServices = ({ onAddressSubmit, handleClose }) => {
   // State management
@@ -87,6 +98,7 @@ const ROServices = ({ onAddressSubmit, handleClose }) => {
   const [showAddressForm, setShowAddressForm] = useState(false);
   const [message, setMessage] = useState('');
   const [quantity, setQuantity] = useState(0)
+
 
   const [formData, setFormData] = useState({
     street: '',
@@ -121,6 +133,13 @@ const ROServices = ({ onAddressSubmit, handleClose }) => {
   const [isTimeSlotsLoading, setIsTimeSlotsLoading] = useState(false);
   const { isLoggedIn, handleLoginSuccess } = useAuth();
   const [cartLoaded, setCartLoaded] = useState(false);
+
+
+  // 🔹 Function to handle address selection
+  const handleSelectAddress = (address) => {
+    setSelectedAddress(address);
+  };
+
 
 
 
@@ -513,7 +532,14 @@ const ROServices = ({ onAddressSubmit, handleClose }) => {
   };
   console.log("selectedTime", selectedTime, selectedDate);
 
+  
 
+
+
+  // 🔹 Function to handle address selection
+  // const handleSelectAddress = (address) => {
+  //   setSelectedAddress(address);
+  // };
 
   const handlePaymentCompleted = async (leadtype, redirect = true) => {
     const cust_id = localStorage.getItem("customer_id");
@@ -731,34 +757,7 @@ const ROServices = ({ onAddressSubmit, handleClose }) => {
     setTimeSlots(defaultTimeSlots);
   }, []);
 
-  // Checkout function
-  const handleCheckout = useCallback(() => {
-    if (!selectedDate || !selectedTime) {
-      toast.error('Please select date and time for the service');
-      return;
-    }
-    if (selectedApiServices.length === 0) {
-      toast.error('Please select at least one service');
-      return;
-    }
-    if (!selectedAddress) {
-      toast.error('Please select an address');
-      return;
-    }
 
-    const serviceNames = selectedApiServices.map(s => `${s.service_name} (x${s.quantity})`).join(', ');
-    toast.success(`Booking confirmed for ₹${getTotalPrice()}`);
-
-    console.log({
-      services: serviceNames,
-      total: getTotalPrice(),
-      date: selectedDate,
-      time: selectedTime,
-      address: selectedAddress
-    });
-
-    closeModal();
-  }, [selectedDate, selectedTime, selectedApiServices, selectedAddress, closeModal]);
 
   // Utility functions
   const getTotalPrice = useCallback(() => {
@@ -794,6 +793,8 @@ const ROServices = ({ onAddressSubmit, handleClose }) => {
       default: return MapPin;
     }
   };
+
+  
 
   // Render loading state for main services
   if (isMainLoading) {
@@ -1331,45 +1332,82 @@ const ROServices = ({ onAddressSubmit, handleClose }) => {
                       </button>
                     </div>
 
-                    <div className="space-y-2 md:space-y-3 mb-4">
-                      {recentAddress.map((address) => {
-                        const AddressIcon = getAddressIcon(address.type);
-                        return (
-                          <div
-                            key={address.id}
-                            onClick={() => setSelectedAddress(address)}
-                            className={`p-3 md:p-4 border-2 rounded-xl cursor-pointer transition-all duration-300 ${selectedAddress?.id === address.id
-                              ? 'border-blue-500 bg-blue-50'
-                              : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
-                              }`}
-                          >
-                            <div className="flex items-start space-x-2 md:space-x-3">
-                              <div className={`w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center flex-shrink-0 ${address.type === 'home' ? 'bg-green-100' : address.type === 'work' ? 'bg-blue-100' : 'bg-gray-100'
-                                }`}>
-                                <AddressIcon className={`w-4 md:w-5 h-4 md:h-5 ${address.type === 'home' ? 'text-green-600' : address.type === 'work' ? 'text-blue-600' : 'text-gray-600'
-                                  }`} />
-                              </div>
-                              <div className="flex-1">
-                                <div className="flex items-center space-x-2 mb-1">
-                                  <span className="font-bold text-gray-900 capitalize text-sm md:text-base">{address.type}</span>
-                                  <span className="text-xs md:text-sm text-gray-500">•</span>
-                                  <span className="text-xs md:text-sm font-medium text-gray-700">{address.area}</span>
-                                </div>
-                                <p className="text-xs md:text-sm text-gray-600 mb-1">{address.address}</p>
-                                {address.landmark && (
-                                  <p className="text-[10px] md:text-xs text-gray-500">Near {address.landmark}</p>
-                                )}
-                                <p className="text-[10px] md:text-xs font-medium text-gray-700 mt-1">PIN: {address.pincode}</p>
-                              </div>
-                              {selectedAddress?.id === address.id && (
-                                <CheckCircle className="w-5 md:w-6 h-5 md:h-6 text-blue-600 flex-shrink-0" />
-                              )}
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
+                  <div className="max-w-2xl mx-auto bg-white rounded-xl shadow-md p-5 md:p-8">
+      <h2 className="text-lg md:text-xl font-semibold text-gray-800 mb-4">Select Delivery Address</h2>
 
+      <div className="space-y-2 md:space-y-3 mb-4">
+        {recentAddress.map((address) => {
+          const AddressIcon = getAddressIcon(address.type);
+
+          return (
+            <div
+              key={address.id}
+              onClick={() => handleSelectAddress(address)}
+              className={`p-3 md:p-4 border-2 rounded-xl cursor-pointer transition-all duration-300 transform hover:scale-[1.01] ${
+                selectedAddress?.id === address.id
+                  ? "border-blue-500 bg-blue-50 shadow-sm"
+                  : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
+              }`}
+            >
+              <div className="flex items-start space-x-2 md:space-x-3">
+                {/* Icon section */}
+                <div
+                  className={`w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
+                    address.type === "home"
+                      ? "bg-green-100"
+                      : address.type === "work"
+                      ? "bg-blue-100"
+                      : "bg-gray-100"
+                  }`}
+                >
+                  <AddressIcon
+                    className={`w-4 md:w-5 h-4 md:h-5 ${
+                      address.type === "home"
+                        ? "text-green-600"
+                        : address.type === "work"
+                        ? "text-blue-600"
+                        : "text-gray-600"
+                    }`}
+                  />
+                </div>
+
+                {/* Address details */}
+                <div className="flex-1">
+                  <div className="flex items-center space-x-2 mb-1">
+                    <span className="font-bold text-gray-900 capitalize text-sm md:text-base">
+                      {address.type}
+                    </span>
+                    <span className="text-xs md:text-sm text-gray-500">•</span>
+                    <span className="text-xs md:text-sm font-medium text-gray-700">
+                      {address.area}
+                    </span>
+                  </div>
+                  <p className="text-xs md:text-sm text-gray-600 mb-1">{address.address}</p>
+                  {address.landmark && (
+                    <p className="text-[10px] md:text-xs text-gray-500">Near {address.landmark}</p>
+                  )}
+                  <p className="text-[10px] md:text-xs font-medium text-gray-700 mt-1">
+                    PIN: {address.pincode}
+                  </p>
+                </div>
+
+                {/* Selected check icon */}
+                {selectedAddress?.id === address.id && (
+                  <CheckCircle className="w-5 md:w-6 h-5 md:h-6 text-blue-600 flex-shrink-0" />
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {selectedAddress && (
+        <div className="mt-4 p-3 rounded-lg bg-blue-50 border border-blue-200 text-sm text-gray-800">
+          ✅ Selected Address:{" "}
+          <span className="font-semibold">{selectedAddress.area}</span> ({selectedAddress.type})
+        </div>
+      )}
+    </div>
                     {showAddressForm && (
                       <form
                         onSubmit={handleSubmit}

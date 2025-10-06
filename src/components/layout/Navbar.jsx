@@ -15,6 +15,7 @@ import LoginModal from "../ui/login";
 import { useAuth } from "@/contexts/userAuth";
 import { getCartItems } from "@/utils/cardData";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 const Navbar = () => {
   // ✅ consume context
@@ -223,42 +224,36 @@ useEffect(() => {
               </button>
 
               {/* User Dropdown */}
-              {isLoggedIn && userDropdownOpen && (
-                <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl border border-gray-200 z-50">
-                  <div className="p-3 border-b border-gray-100">
-                    <p className="font-semibold text-gray-900 truncate">
+               {isLoggedIn && userDropdownOpen && (
+                <div className="absolute top-full mt-2 right-0 w-40 bg-white shadow-lg rounded-md z-50">
+                  <div className="p-2 border-b border-gray-200">
+                    <span className="text-sm font-semibold text-gray-900 block truncate">
                       {userInfo?.name}
-                    </p>
-                    <p className="text-sm text-gray-500 truncate">
+                    </span>
+                    <span className="text-xs text-gray-500 block truncate">
                       {userInfo?.phone}
-                    </p>
+                    </span>
                   </div>
-
-                  <div className="py-1">
-                    <button
-                      onClick={() => handleNavigation("profile", "profile")}
-                      className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                    >
-                      <Settings className="w-4 h-4 mr-3" />
-                      Account Details
-                    </button>
-
-                    <button
-                      onClick={() => handleNavigation("bookings", "bookings")}
-                      className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                    >
-                      <Calendar className="w-4 h-4 mr-3" />
-                      My Bookings
-                    </button>
-
-                    <button
-      onClick={handleLogout}
-      className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50"
-    >
-      <LogOut className="w-4 h-4 mr-3" />
-      Logout
-    </button>
-                  </div>
+                  <Link
+                    href="/account-details"
+                    onClick={() => setUserDropdownOpen(false)}
+                    className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-blue-100 transition-colors"
+                  >
+                    Account
+                  </Link>
+                  <Link
+                    href="/my-bookings"
+                    onClick={() => setUserDropdownOpen(false)}
+                    className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-blue-100 transition-colors"
+                  >
+                    My Bookings
+                  </Link>
+                  <button
+                    onClick={handleLogout}
+                    className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-blue-100 transition-colors"
+                  >
+                    Logout
+                  </button>
                 </div>
               )}
             </div>

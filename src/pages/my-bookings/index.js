@@ -89,7 +89,7 @@ function Booking() {
         "Cancelled": "3"
       };
 
-      const response = await fetch('/api/bookings/', {
+      const response = await fetch('/api/bookings/booking', {
         method: "POST",
         headers: { 
           "Content-Type": "application/json",
@@ -104,7 +104,7 @@ function Booking() {
       
 
       if (!response.ok) {
-        throw new Error(`Request failed with status ${response.status}`);
+        // throw new Error(`Request failed with status ${response.status}`);
       }
 
       const data = await response.json();
@@ -144,7 +144,7 @@ const fetchCancelReasons = async () => {
   try {
     setReasonsLoading(true);
     
-    const response = await fetch('/api/bookings/cancel-reasons', {
+    const response = await fetch('/api/bookings/cancel-reasons/cancelReason', {
       method: "GET",
       headers: { 
         "Content-Type": "application/json",
@@ -194,7 +194,7 @@ const fetchCancelReasons = async () => {
         return;
       }
 
-      const response = await fetch('/api/booking-details', {
+      const response = await fetch('/api/booking-details/bookingDetails', {
         method: "POST",
         headers: { 
           "Content-Type": "application/json",
@@ -300,7 +300,7 @@ const handleCancelBooking = async () => {
     setCancelLoading(true);
     
     // The key change is to ensure selectedReason is not empty and is correctly passed
-    const response = await fetch('/api/bookings/cancel', {
+    const response = await fetch('/api/bookings/cancel/cancelBooking', {
       method: "POST",
       headers: { 
         "Content-Type": "application/json",
@@ -311,6 +311,9 @@ const handleCancelBooking = async () => {
         comment: cancelComment || ""
       }),
     });
+
+    console.log("response",response);
+    
 
     if (!response.ok) {
       throw new Error(`Failed to cancel: ${response.status}`);
@@ -410,7 +413,7 @@ const handleCancelBooking = async () => {
         </p>
         {/* <Link href={"/service"}> */}
           <button className="bg-gradient-to-r from-purple-600 to-indigo-700 hover:from-purple-700 hover:to-indigo-800 text-white font-medium py-2.5 px-6 rounded-full transition-all shadow-lg hover:shadow-2xl text-sm sm:text-base" onClick={fetchBookings}>
-            Explore Our Servicesss
+            Explore Our Services
           </button>
         {/* </Link> */}
       </div>
@@ -424,115 +427,117 @@ const handleCancelBooking = async () => {
         <meta name="description" content="View your active, completed, and cancelled service bookings." />
       </Head>
 
-
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-2 sm:p-4">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-blue-50 via-sky-50 to-slate-50 p-4">
         <div className="w-full max-w-7xl">
-          <div className="flex items-center text-left mb-4 sm:mb-6 px-2 sm:px-0">
-            <Link href={"/"} className="flex items-center text-gray-600 hover:text-purple-600 transition-colors text-sm sm:text-base">
-              <FiHome className="mr-1 sm:mr-2 text-sm sm:text-base" />
+          {/* Breadcrumb */}
+          <div className="flex items-center text-left mb-6 px-2">
+            <Link href={"/"} className="flex items-center text-slate-600 hover:text-blue-600 transition-colors">
+              <FiHome className="mr-2" />
               <span>Home</span>
             </Link>
-            <span className="mx-1 sm:mx-2 text-gray-400">/</span>
-            <span className="text-purple-600 font-medium text-sm sm:text-base">Booking History</span>
+            <span className="mx-2 text-slate-400">/</span>
+            <span className="text-blue-600 font-medium">Booking History</span>
           </div>
 
-          <div className="bg-white shadow-xl rounded-xl overflow-hidden border border-gray-100">
-            <div className="bg-gradient-to-r from-purple-600 to-indigo-700 p-4 sm:p-6">
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-0">
+          {/* Main Card */}
+          <div className="bg-white shadow-2xl rounded-3xl overflow-hidden border border-blue-100">
+            {/* Header */}
+            <div className="bg-gradient-to-r from-blue-600 via-blue-700 to-sky-600 p-6">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
-                  <h3 className="text-xl sm:text-2xl font-bold text-white">Your Service Bookings</h3>
-                  <p className="text-purple-200 mt-1 text-sm sm:text-base">
+                  <h3 className="text-2xl font-bold text-white">Your Service Bookings</h3>
+                  <p className="text-blue-100 mt-1">
                     {activeTab === "Active" ? "Active & upcoming services" : 
                      activeTab === "Completed" ? "Completed services" : "Cancelled services"}
                   </p>
                 </div>
-                <div className="bg-white/20 p-2 rounded-lg self-end sm:self-auto">
-                  <span className="text-white text-sm font-medium">
+                <div className="bg-white/20 backdrop-blur-sm px-4 py-2 rounded-xl border border-white/30">
+                  <span className="text-white text-sm font-semibold">
                     {bookings.length} {bookings.length === 1 ? "booking" : "bookings"}
                   </span>
                 </div>
               </div>
             </div>
 
-            <div className="flex flex-col sm:flex-row justify-center gap-2 sm:gap-4 bg-gray-50 p-3 sm:p-4 border-b border-gray-200">
-              <div className="flex flex-row gap-2 sm:gap-4 overflow-x-auto">
-                {["Active", "Completed", "Cancelled"].map((tab) => (
-                  <button
-                    key={tab}
-                    className={`px-3 sm:px-5 py-2 rounded-full text-xs sm:text-sm font-semibold flex items-center gap-1 sm:gap-2 transition-all whitespace-nowrap ${
-                      activeTab === tab
-                        ? `bg-${
-                            tab === "Active" ? "purple" : 
-                            tab === "Completed" ? "green" : "red"
-                          }-600 text-white shadow-lg`
-                        : "bg-white text-gray-600 border border-gray-200 hover:bg-purple-100"
-                    }`}
-                    onClick={() => handleTabClick(tab)}
-                  >
-                    {tab === "Active" ? <FiClock /> : 
-                     tab === "Completed" ? <FiCheckCircle /> : <FiXCircle />}
-                    <span className="hidden xs:inline">{tab}</span>
-                    <span className="xs:hidden">{tab}</span>
-                    {activeTab === tab && (
-                      <span className={`bg-white text-${
-                        tab === "Active" ? "purple" : 
-                        tab === "Completed" ? "green" : "red"
-                      }-700 font-bold px-1.5 sm:px-2 py-0.5 text-xs rounded-full`}>
-                        {bookings.length}
-                      </span>
-                    )}
-                  </button>
-                ))}
-              </div>
+            {/* Tabs */}
+            <div className="flex justify-center gap-3 bg-gradient-to-b from-blue-50 to-white p-4 border-b border-blue-100">
+              {["Active", "Completed", "Cancelled"].map((tab) => (
+                <button
+                  key={tab}
+                  className={`px-6 py-2.5 rounded-full text-sm font-semibold flex items-center gap-2 transition-all whitespace-nowrap ${
+                    activeTab === tab
+                      ? `bg-gradient-to-r ${
+                          tab === "Active" ? "from-blue-600 to-sky-600" : 
+                          tab === "Completed" ? "from-emerald-600 to-green-600" : "from-rose-600 to-red-600"
+                        } text-white shadow-lg`
+                      : "bg-white text-slate-600 border-2 border-slate-200 hover:border-blue-300 hover:bg-blue-50"
+                  }`}
+                  onClick={() => handleTabClick(tab)}
+                >
+                  {tab === "Active" ? <FiClock /> : 
+                   tab === "Completed" ? <FiCheckCircle /> : <FiXCircle />}
+                  {tab}
+                  {activeTab === tab && (
+                    <span className={`bg-white ${
+                      tab === "Active" ? "text-blue-700" : 
+                      tab === "Completed" ? "text-emerald-700" : "text-rose-700"
+                    } font-bold px-2 py-0.5 text-xs rounded-full`}>
+                      {bookings.length}
+                    </span>
+                  )}
+                </button>
+              ))}
             </div>
 
-            <div className="p-3 sm:p-6">
+            {/* Content */}
+            <div className="p-6">
               {loading ? (
-                <div className="flex justify-center py-10 opacity-70">
-                  <div className="w-12 h-12 sm:w-16 sm:h-16 border-4 border-purple-400 border-dashed rounded-full animate-spin"></div>
+                <div className="flex flex-col items-center justify-center py-16">
+                  <div className="w-16 h-16 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
+                  <p className="text-slate-600 mt-4">Loading bookings...</p>
                 </div>
               ) : bookings.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                   {bookings.map((service) => (
-                    <div key={service.id} className="border border-gray-100 bg-white rounded-2xl p-4 sm:p-6 hover:shadow-2xl transition-shadow group relative overflow-hidden">
-                      <div className="relative z-10 flex flex-col h-full">
-                        {activeTab === "Active" && (
-                          <div className="flex items-center justify-between mb-3 sm:mb-4">
-                            <div className="flex items-center gap-1 sm:gap-2">
-                              <FiHash className="text-purple-600 text-xs sm:text-sm" />
-                              <span className="text-xs sm:text-sm font-mono text-gray-600">ID: {service.id}</span>
-                            </div>
+                    <div key={service.id} className="border-2 border-blue-100 bg-gradient-to-br from-white to-blue-50/30 rounded-2xl p-6 hover:shadow-xl hover:border-blue-300 transition-all group">
+                      <div className="flex flex-col h-full">
+                        {/* Booking ID */}
+                        <div className="flex items-center justify-between mb-4">
+                          <div className="flex items-center gap-2 bg-blue-100 px-3 py-1.5 rounded-full">
+                            <FiHash className="text-blue-600 text-xs" />
+                            <span className="text-xs font-mono font-semibold text-blue-700">ID: {service.id}</span>
                           </div>
-                        )}
+                        </div>
 
-                        <div className="flex items-start gap-3 sm:gap-4 mb-3 sm:mb-4">
-                          <div className="flex-shrink-0 bg-purple-100 p-2 sm:p-3 rounded-xl">
-                            <FiCalendar className="text-purple-600 text-base sm:text-xl" />
+                        {/* Service Info */}
+                        <div className="flex items-start gap-4 mb-4">
+                          <div className="flex-shrink-0 bg-gradient-to-br from-blue-100 to-sky-100 p-3 rounded-xl">
+                            <FiCalendar className="text-blue-600 text-xl" />
                           </div>
                           <div className="flex-1 min-w-0">
-                            <h4 className="font-bold text-gray-900 text-sm sm:text-lg leading-tight truncate">
+                            <h4 className="font-bold text-slate-900 text-lg leading-tight mb-1">
                               {service.serviceType}
                             </h4>
-                            <p className="text-xs sm:text-sm text-gray-500 mt-1 truncate">
+                            <p className="text-sm text-slate-500">
                               Booked on {service.bookingDate}
                             </p>
                           </div>
-                          
                         </div>
 
-                        <div className="flex flex-col xs:flex-row justify-between items-start xs:items-center mb-4 gap-2 xs:gap-0">
+                        {/* Status and Amount */}
+                        <div className="flex justify-between items-center mb-5">
                           <StatusBadge status={service.status} />
-                          <p className="text-base sm:text-lg font-bold text-purple-600 flex items-center">
-                            <span className="mr-1">₹</span>
-                            {service.amount}
+                          <p className="text-xl font-bold bg-gradient-to-r from-blue-600 to-sky-600 bg-clip-text text-transparent">
+                            ₹{service.amount}
                           </p>
                         </div>
 
+                        {/* View Button */}
                         <button
                           onClick={() => handleViewBooking(service)}
-                          className="w-full bg-gradient-to-r from-purple-600 to-indigo-700 hover:from-purple-700 hover:to-indigo-800 text-white font-medium py-2 sm:py-2.5 px-3 sm:px-4 rounded-lg transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2 text-sm sm:text-base"
+                          className="w-full bg-gradient-to-r from-blue-600 to-sky-600 hover:from-blue-700 hover:to-sky-700 text-white font-semibold py-3 px-4 rounded-xl transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2"
                         >
-                          <FiEye className="text-xs sm:text-sm" />
+                          <FiEye />
                           View Details
                         </button>
                       </div>
@@ -549,60 +554,59 @@ const handleCancelBooking = async () => {
 
       {/* View Booking Modal */}
       {viewModalOpen && selectedBooking && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4 z-50">
-          <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[95vh] sm:max-h-[90vh] overflow-y-auto shadow-xl">
-            {/* Header with gradient background */}
-            <div className="bg-gradient-to-r from-indigo-600 to-purple-700 p-5 sm:p-6 rounded-t-2xl sticky top-0 z-10">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-3xl max-w-4xl w-full max-h-[95vh] overflow-y-auto shadow-2xl">
+            {/* Modal Header */}
+            <div className="bg-gradient-to-r from-blue-600 via-blue-700 to-sky-600 p-6 rounded-t-3xl sticky top-0 z-10">
               <div className="flex justify-between items-start">
                 <div>
-                  <h3 className="text-2xl sm:text-3xl font-bold text-white">Booking Summary</h3>
-                  <p className="text-indigo-100 mt-1">ID: #{selectedBooking.id}</p>
+                  <h3 className="text-3xl font-bold text-white">Booking Summary</h3>
+                  <p className="text-blue-100 mt-1">ID: #{selectedBooking.id}</p>
                 </div>
                 <button
                   onClick={() => setViewModalOpen(false)}
                   className="text-white hover:bg-white/20 p-2 rounded-full transition-colors"
-                  aria-label="Close modal"
                 >
                   <FiX className="text-xl" />
                 </button>
               </div>
             </div>
 
-            {/* Main content */}
-            <div className="p-5 sm:p-6">
+            {/* Modal Content */}
+            <div className="p-6">
               {loading ? (
                 <div className="flex justify-center py-16">
-                  <div className="w-14 h-14 border-4 border-indigo-400 border-t-transparent rounded-full animate-spin"></div>
+                  <div className="w-14 h-14 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
                 </div>
               ) : (
                 <>
-                  {/* Two-column layout for booking info */}
+                  {/* Two Column Layout */}
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-                    {/* Left column - Customer details */}
+                    {/* Customer Details */}
                     <div className="space-y-5">
-                      <div className="bg-gray-50 p-4 rounded-xl">
-                        <h4 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                          <FiUser className="text-indigo-600" />
+                      <div className="bg-gradient-to-br from-blue-50 to-sky-50 p-5 rounded-2xl border border-blue-100">
+                        <h4 className="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2">
+                          <FiUser className="text-blue-600" />
                           Customer Information
                         </h4>
                         
                         <div className="space-y-4">
                           <div>
-                            <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">Name</p>
-                            <p className="font-medium text-gray-900 mt-1">{selectedBooking.name || "Not provided"}</p>
+                            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Name</p>
+                            <p className="font-semibold text-slate-900">{selectedBooking.name || "Not provided"}</p>
                           </div>
                           
                           <div>
-                            <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">Contact</p>
-                            <p className="font-medium text-gray-900 mt-1">{selectedBooking.mobile || "Not provided"}</p>
+                            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Contact</p>
+                            <p className="font-semibold text-slate-900">{selectedBooking.mobile || "Not provided"}</p>
                             {selectedBooking.email && (
-                              <p className="text-sm text-gray-600 mt-1 break-all">{selectedBooking.email}</p>
+                              <p className="text-sm text-slate-600 mt-1">{selectedBooking.email}</p>
                             )}
                           </div>
                           
                           <div>
-                            <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">Address</p>
-                            <p className="font-medium text-gray-900 mt-1 whitespace-pre-line">
+                            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Address</p>
+                            <p className="font-semibold text-slate-900 whitespace-pre-line">
                               {selectedBooking.address || "Not provided"}
                             </p>
                           </div>
@@ -610,23 +614,23 @@ const handleCancelBooking = async () => {
                       </div>
                     </div>
 
-                    {/* Right column - Booking details */}
+                    {/* Appointment Details */}
                     <div className="space-y-5">
-                      <div className="bg-gray-50 p-4 rounded-xl">
-                        <h4 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                          <FiCalendar className="text-indigo-600" />
+                      <div className="bg-gradient-to-br from-blue-50 to-sky-50 p-5 rounded-2xl border border-blue-100">
+                        <h4 className="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2">
+                          <FiCalendar className="text-blue-600" />
                           Appointment Details
                         </h4>
                         
                         <div className="space-y-4">
                           <div>
-                            <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">Date & Time</p>
-                            <div className="flex items-center gap-3 mt-1">
-                              <div className="bg-indigo-100 text-indigo-800 px-3 py-1 rounded-full text-sm font-medium">
+                            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Date & Time</p>
+                            <div className="flex flex-wrap gap-2">
+                              <div className="bg-blue-100 text-blue-700 px-3 py-1.5 rounded-full text-sm font-semibold">
                                 {selectedBooking.date || "Not set"}
                               </div>
                               {selectedBooking.time && (
-                                <div className="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm font-medium">
+                                <div className="bg-sky-100 text-sky-700 px-3 py-1.5 rounded-full text-sm font-semibold">
                                   {selectedBooking.time}
                                 </div>
                               )}
@@ -634,36 +638,34 @@ const handleCancelBooking = async () => {
                           </div>
                           
                           <div>
-                            <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">Payment</p>
-                            <div className="flex items-center justify-between mt-1">
+                            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Payment</p>
+                            <div className="flex items-center justify-between">
                               <PaymentStatusBadge status={selectedBooking.payment_status} />
-                              <span className="font-bold text-gray-900">₹{selectedBooking.amount || "0"}</span>
+                              <span className="font-bold text-slate-900 text-lg">₹{selectedBooking.amount || "0"}</span>
                             </div>
                           </div>
                           
                           <div>
-                            <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">Status</p>
-                            <div className="mt-1">
-                              <StatusBadge status={selectedBooking.status} />
-                            </div>
+                            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Status</p>
+                            <StatusBadge status={selectedBooking.status} />
                           </div>
                         </div>
                       </div>
 
-                      {/* Support contact card */}
-                      <div className="bg-indigo-50 border border-indigo-100 p-4 rounded-xl">
-                        <h4 className="text-lg font-semibold text-indigo-800 mb-3 flex items-center gap-2">
-                          <FiPhone className="text-indigo-600" />
+                      {/* Support Card */}
+                      <div className="bg-gradient-to-br from-blue-600 to-sky-600 p-5 rounded-2xl text-white">
+                        <h4 className="text-lg font-semibold mb-2 flex items-center gap-2">
+                          <FiPhone />
                           Need Help?
                         </h4>
-                        <p className="text-sm text-gray-600 mb-3">
-                          Contact our support team for any assistance with your booking.
+                        <p className="text-blue-100 text-sm mb-3">
+                          Contact our support team for assistance
                         </p>
-                        <div className="flex items-center gap-3">
-                          <FiPhone className="text-indigo-600 flex-shrink-0" />
+                        <div className="flex items-center gap-3 bg-white/20 backdrop-blur-sm p-3 rounded-xl">
+                          <FiPhone className="flex-shrink-0" />
                           <a 
                             href={`tel:${selectedBooking.call_to_number}`}
-                            className="text-lg font-bold text-indigo-700 hover:text-indigo-800 transition-colors"
+                            className="text-lg font-bold hover:underline"
                           >
                             {selectedBooking.call_to_number}
                           </a>
@@ -672,55 +674,54 @@ const handleCancelBooking = async () => {
                     </div>
                   </div>
 
-                  {/* Service image section */}
+                  {/* Service Image */}
                   {selectedBooking.image && (
                     <div className="mb-8">
-                      <h4 className="text-lg font-semibold text-gray-800 mb-3 flex items-center gap-2">
-                        <FiImage className="text-indigo-600" />
+                      <h4 className="text-lg font-semibold text-slate-800 mb-3 flex items-center gap-2">
+                        <FiImage className="text-blue-600" />
                         Service Reference
                       </h4>
                       <div className="relative group">
-                        <div className="w-full h-64 sm:h-72 bg-gray-100 rounded-xl border border-gray-200 overflow-hidden">
+                        <div className="w-full h-72 bg-slate-100 rounded-2xl border-2 border-blue-100 overflow-hidden">
                           <img
                             src={selectedBooking.image}
                             alt="Service reference"
                             className="w-full h-full object-contain p-4"
                             onError={(e) => {
                               e.target.src = 'https://www.waterpurifierservicecenter.in/customer_app_images/service_and_repair.jpg';
-                              e.target.className = 'w-full h-full object-contain p-4';
                             }}
                           />
                         </div>
                         <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                           <button 
                             onClick={() => window.open(selectedBooking.image, '_blank')}
-                            className="bg-white/90 hover:bg-white text-indigo-600 px-4 py-2 rounded-full shadow-md flex items-center gap-2 transition-all"
+                            className="bg-white hover:bg-blue-50 text-blue-600 px-4 py-2 rounded-full shadow-lg flex items-center gap-2 transition-all"
                           >
                             <FiMaximize2 size={16} />
-                            <span className="text-sm font-medium">View Full Size</span>
+                            <span className="text-sm font-semibold">View Full Size</span>
                           </button>
                         </div>
                       </div>
                     </div>
                   )}
 
-                  {/* Action buttons */}
-                  <div className="flex flex-col sm:flex-row gap-4 mt-8">
+                  {/* Action Buttons */}
+                  <div className="flex flex-col sm:flex-row gap-4">
                     <button
                       onClick={handleCallSupport}
-                      className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3.5 rounded-xl flex items-center justify-center gap-3 transition-all shadow-sm hover:shadow-md"
+                      className="flex-1 bg-gradient-to-r from-blue-600 to-sky-600 hover:from-blue-700 hover:to-sky-700 text-white px-6 py-3.5 rounded-xl flex items-center justify-center gap-3 transition-all shadow-md hover:shadow-lg font-semibold"
                     >
                       <FiPhone size={18} />
-                      <span className="font-medium">Call Support</span>
+                      Call Support
                     </button>
 
                     {selectedBooking.status === "Active" && (
                       <button
                         onClick={() => handleOpenCancelModal(selectedBooking)}
-                        className="flex-1 bg-white border border-gray-300 hover:border-red-300 hover:bg-red-50 text-red-600 px-6 py-3.5 rounded-xl flex items-center justify-center gap-3 transition-all shadow-sm hover:shadow-md"
+                        className="flex-1 bg-white border-2 border-rose-300 hover:bg-rose-50 text-rose-600 px-6 py-3.5 rounded-xl flex items-center justify-center gap-3 transition-all shadow-md hover:shadow-lg font-semibold"
                       >
                         <FiXCircle size={18} />
-                        <span className="font-medium">Cancel Booking</span>
+                        Cancel Booking
                       </button>
                     )}
                   </div>
@@ -732,145 +733,142 @@ const handleCancelBooking = async () => {
       )}
 
       {/* Cancel Booking Modal */}
-    {/* Cancel Booking Modal */}
-{/* Cancel Booking Modal */}
-{cancelModalOpen && selectedBooking && (
-  <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-[60]">
-    <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl animate-in slide-in-from-bottom-4 duration-300 max-h-[90vh] flex flex-col">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-red-500 to-red-600 p-6 rounded-t-2xl flex-shrink-0">
-        <div className="flex justify-between items-start">
-          <div>
-            <h3 className="text-xl font-bold text-white">Cancel Booking</h3>
-            <p className="text-red-100 mt-1 text-sm">ID: #{selectedBooking.id}</p>
-          </div>
-          <button
-            onClick={() => setCancelModalOpen(false)}
-            className="text-white hover:bg-white/20 p-2 rounded-full transition-colors"
-            aria-label="Close modal"
-          >
-            <FiX className="text-lg" />
-          </button>
-        </div>
-      </div>
-
-      {/* Content with scroll */}
-      <div className="p-6 overflow-y-auto flex-grow">
-        <div className="text-center mb-6">
-          <div className="mx-auto bg-red-100 p-3 rounded-full w-16 h-16 flex items-center justify-center mb-4">
-            <FiAlertCircle className="text-red-500 text-2xl" />
-          </div>
-          <p className="text-gray-700 text-sm">
-            Please select a reason for cancelling this booking. This will help us improve our services.
-          </p>
-        </div>
-
-        {/* Cancellation Reasons */}
-        <div className="space-y-3 mb-6">
-          <label className="block text-sm font-medium text-gray-700 mb-3">
-            Select Cancellation Reason *
-          </label>
-          
-          {reasonsLoading ? (
-            <div className="flex items-center justify-center py-8">
-              <FiLoader className="animate-spin text-gray-400 text-2xl" />
-              <span className="ml-2 text-gray-500">Loading reasons...</span>
+      {cancelModalOpen && selectedBooking && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-[60]">
+          <div className="bg-white rounded-3xl max-w-md w-full shadow-2xl max-h-[90vh] flex flex-col">
+            {/* Cancel Header */}
+            <div className="bg-gradient-to-r from-rose-500 to-red-600 p-6 rounded-t-3xl flex-shrink-0">
+              <div className="flex justify-between items-start">
+                <div>
+                  <h3 className="text-xl font-bold text-white">Cancel Booking</h3>
+                  <p className="text-rose-100 mt-1 text-sm">ID: #{selectedBooking.id}</p>
+                </div>
+                <button
+                  onClick={() => setCancelModalOpen(false)}
+                  className="text-white hover:bg-white/20 p-2 rounded-full transition-colors"
+                >
+                  <FiX className="text-lg" />
+                </button>
+              </div>
             </div>
-          ) : (
-            <div className="space-y-2 max-h-64 overflow-y-auto">
-              {Array.isArray(cancelReasons) &&
-                cancelReasons.map((reason, index) => {
-                  const reasonText = typeof reason === 'object' ? reason.reason : reason;
-                  const reasonId = `reason-${index}`;
-                  return (
-                    <label
-                      key={index}
-                      htmlFor={reasonId}
-                      className={`flex items-center px-4 py-3 rounded-lg cursor-pointer transition-colors border ${
-                        selectedReason === reasonText
-                          ? 'bg-red-50 border-red-500 text-red-700'
-                          : 'bg-white border-gray-200 hover:bg-gray-50'
-                      }`}
-                    >
-                      <input
-                        type="radio"
-                        id={reasonId}
-                        name="cancellationReason"
-                        value={reasonText}
-                        checked={selectedReason === reasonText}
-                        onChange={(e) => setSelectedReason(e.target.value)}
-                        className="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 mr-3"
-                      />
-                      <span className="text-sm font-medium">{reasonText}</span>
-                    </label>
-                  );
-                })}
-            </div>
-          )}
-        </div>
 
-        {/* Additional Comment */}
-        <div className="mb-6">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Additional Comment (Optional)
-          </label>
-          <textarea
-            value={cancelComment}
-            onChange={(e) => setCancelComment(e.target.value)}
-            placeholder="Please provide any additional details about your cancellation..."
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 resize-none"
-            rows={3}
-            maxLength={500}
-          />
-          <p className="text-xs text-gray-500 mt-1">
-            {cancelComment.length}/500 characters
-          </p>
-        </div>
+            {/* Cancel Content */}
+            <div className="p-6 overflow-y-auto flex-grow">
+              <div className="text-center mb-6">
+                <div className="mx-auto bg-rose-100 p-3 rounded-full w-16 h-16 flex items-center justify-center mb-4">
+                  <FiAlertCircle className="text-rose-600 text-2xl" />
+                </div>
+                <p className="text-slate-700 text-sm">
+                  Please select a reason for cancelling this booking. This helps us improve our services.
+                </p>
+              </div>
 
-        {/* Warning Message */}
-        <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
-          <div className="flex items-start">
-            <FiAlertCircle className="text-amber-500 text-lg mt-0.5 mr-3 flex-shrink-0" />
-            <div>
-              <h4 className="text-sm font-medium text-amber-800">Important Notice</h4>
-              <p className="text-xs text-amber-700 mt-1">
-                Once cancelled, this booking cannot be restored. You may need to create a new booking for future services.
-              </p>
+              {/* Cancellation Reasons */}
+              <div className="space-y-3 mb-6">
+                <label className="block text-sm font-semibold text-slate-700 mb-3">
+                  Select Cancellation Reason *
+                </label>
+                
+                {reasonsLoading ? (
+                  <div className="flex items-center justify-center py-8">
+                    <FiLoader className="animate-spin text-slate-400 text-2xl mr-2" />
+                    <span className="text-slate-500">Loading reasons...</span>
+                  </div>
+                ) : (
+                  <div className="space-y-2 max-h-64 overflow-y-auto">
+                    {Array.isArray(cancelReasons) &&
+                      cancelReasons.map((reason, index) => {
+                        const reasonText = typeof reason === 'object' ? reason.reason : reason;
+                        const reasonId = `reason-${index}`;
+                        return (
+                          <label
+                            key={index}
+                            htmlFor={reasonId}
+                            className={`flex items-center px-4 py-3 rounded-xl cursor-pointer transition-all border-2 ${
+                              selectedReason === reasonText
+                                ? 'bg-rose-50 border-rose-500 text-rose-700'
+                                : 'bg-white border-slate-200 hover:bg-slate-50 hover:border-slate-300'
+                            }`}
+                          >
+                            <input
+                              type="radio"
+                              id={reasonId}
+                              name="cancellationReason"
+                              value={reasonText}
+                              checked={selectedReason === reasonText}
+                              onChange={(e) => setSelectedReason(e.target.value)}
+                              className="h-4 w-4 text-rose-600 focus:ring-rose-500 border-slate-300 mr-3"
+                            />
+                            <span className="text-sm font-medium">{reasonText}</span>
+                          </label>
+                        );
+                      })}
+                  </div>
+                )}
+              </div>
+
+              {/* Additional Comment */}
+              <div className="mb-6">
+                <label className="block text-sm font-semibold text-slate-700 mb-2">
+                  Additional Comment (Optional)
+                </label>
+                <textarea
+                  value={cancelComment}
+                  onChange={(e) => setCancelComment(e.target.value)}
+                  placeholder="Please provide any additional details..."
+                  className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:ring-2 focus:ring-rose-500 focus:border-rose-500 resize-none"
+                  rows={3}
+                  maxLength={500}
+                />
+                <p className="text-xs text-slate-500 mt-1">
+                  {cancelComment.length}/500 characters
+                </p>
+              </div>
+
+              {/* Warning Message */}
+              <div className="bg-amber-50 border-2 border-amber-200 rounded-xl p-4 mb-6">
+                <div className="flex items-start">
+                  <FiAlertCircle className="text-amber-600 text-lg mt-0.5 mr-3 flex-shrink-0" />
+                  <div>
+                    <h4 className="text-sm font-semibold text-amber-800">Important Notice</h4>
+                    <p className="text-xs text-amber-700 mt-1">
+                      Once cancelled, this booking cannot be restored. You may need to create a new booking for future services.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setCancelModalOpen(false)}
+                  className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold py-3 px-4 rounded-xl transition-all"
+                  disabled={cancelLoading}
+                >
+                  Keep Booking
+                </button>
+                <button
+                  onClick={handleCancelBooking}
+                  disabled={!selectedReason || cancelLoading}
+                  className="flex-1 bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-700 hover:to-red-700 disabled:from-rose-300 disabled:to-red-300 disabled:cursor-not-allowed text-white font-semibold py-3 px-4 rounded-xl transition-all flex items-center justify-center gap-2"
+                >
+                  {cancelLoading ? (
+                    <>
+                      <FiLoader className="animate-spin text-sm" />
+                      Cancelling...
+                    </>
+                  ) : (
+                    <>
+                      <FiXCircle className="text-sm" />
+                      Cancel Booking
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
           </div>
         </div>
-
-        {/* Action Buttons */}
-        <div className="flex gap-3">
-          <button
-            onClick={() => setCancelModalOpen(false)}
-            className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-3 px-4 rounded-lg transition-colors"
-            disabled={cancelLoading}
-          >
-            Keep Booking
-          </button>
-          <button
-            onClick={handleCancelBooking}
-            disabled={!selectedReason || cancelLoading}
-            className="flex-1 bg-red-600 hover:bg-red-700 disabled:bg-red-300 disabled:cursor-not-allowed text-white font-medium py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"
-          >
-            {cancelLoading ? (
-              <>
-                <FiLoader className="animate-spin text-sm" />
-                <span>Cancelling...</span>
-              </>
-            ) : (
-              <>
-                <FiXCircle className="text-sm" />
-                <span>Cancel Booking</span>
-              </>
-            )}
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-)}
+      )}
     </>
   );
 }
