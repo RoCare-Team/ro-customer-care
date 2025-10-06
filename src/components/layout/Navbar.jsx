@@ -125,9 +125,9 @@ console.log("mglewfmglwdfmgwldfmgwledf");
         // Redirect to checkout page
         window.location.href = "/checkout";
       } else if (action === "profile") {
-        window.location.href = "/profile";
+        window.location.href = "/account-details";
       } else if (action === "bookings") {
-        window.location.href = "/bookings";
+        window.location.href = "/my-bookings";
       } else if (action === "home") {
         window.location.href = "/";
       }

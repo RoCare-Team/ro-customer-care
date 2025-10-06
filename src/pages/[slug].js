@@ -41,12 +41,12 @@ export default function ROServicePage() {
   const [invalid, setInvalid] = useState(false);
   const { isLoggedIn, handleLoginSuccess } = useAuth();
 
-    const { brand, isCustomerCare } = parseCustomerCareSlug(slug);
+  const { brand, isCustomerCare } = parseCustomerCareSlug(slug);
 
-    console.log("isCustomerCare",isCustomerCare);
-    
+  console.log("isCustomerCare", isCustomerCare);
 
-    const [pageData, setPageData] = useState(null);
+
+  const [pageData, setPageData] = useState(null);
 
 
   // const cityWase
@@ -109,10 +109,10 @@ export default function ROServicePage() {
   // console.log("City:", citys);         // Delhi44
 
 
-  console.log("slugggggggggggggggg",slug);
+  console.log("slugggggggggggggggg", slug);
 
-  
-  
+
+
 
 
   // Load cart data from localStorage
@@ -244,39 +244,39 @@ export default function ROServicePage() {
   // string ke har word ka first letter capital
 
   // Memoized function to fetch page data
-const getPageData = useCallback(async (pageUrl) => {
-  const url = pageUrl || (Array.isArray(slug) ? slug[0] : slug);
-  if (!url) return null;
+  const getPageData = useCallback(async (pageUrl) => {
+    const url = pageUrl || (Array.isArray(slug) ? slug[0] : slug);
+    if (!url) return null;
 
-  try {
-    const response = await fetch(`/api/getPage?page_url=${encodeURIComponent(url)}`);
-    if (!response.ok) {
-      console.error("Failed to fetch page data:", response.status);
+    try {
+      const response = await fetch(`/api/getPage?page_url=${encodeURIComponent(url)}`);
+      if (!response.ok) {
+        console.error("Failed to fetch page data:", response.status);
+        return null;
+      }
+
+      const data = await response.json();
+      console.log("Page data fetched:", data);
+      setPageData(data)
+      return data;
+    } catch (error) {
+      console.error("Error fetching page data:", error);
       return null;
     }
+  }, [slug]);
 
-    const data = await response.json();
-    console.log("Page data fetched:", data);
-    setPageData(data)
-    return data;
-  } catch (error) {
-    console.error("Error fetching page data:", error);
-    return null;
-  }
-}, [slug]);
+  // ✅ Always call useEffect; handle slug check inside
+  // ✅ Always call useEffect; handle slug check inside
+  useEffect(() => {
+    const fetchData = async () => {
+      const data = await getPageData();
+      setPageData(data);
+    };
 
-// ✅ Always call useEffect; handle slug check inside
-// ✅ Always call useEffect; handle slug check inside
-useEffect(() => {
-  const fetchData = async () => {
-    const data = await getPageData();
-    setPageData(data);
-  };
+    fetchData();
+  }, [slug, getPageData]);
 
-  fetchData();
-}, [slug, getPageData]);
-
-console.log("pageData", pageData);
+  console.log("pageData", pageData);
 
 
   function safeCapitalize(str) {
@@ -359,21 +359,27 @@ console.log("pageData", pageData);
 
   // Add to cart handler
   // Add to cart
-  const handleAddToCart = useCallback((service) => {
-    const existingItem = cartData.find(item => item.service_id === service.id);
-    const currentQuantity = existingItem ? parseInt(existingItem.quantity) : 0;
+ const handleAddToCart = useCallback((service) => {
+  if (!isLoggedIn) {
+    setOpenLoginModal(true);
+    return; // Stop execution if not logged in
+  }
 
-    handleCartAction({
-      serviceId: service.id,
-      operation: "add",
-      currentQuantity
-    });
+  const existingItem = cartData.find(item => item.service_id === service.id);
+  const currentQuantity = existingItem ? parseInt(existingItem.quantity) : 0;
 
-    if (!existingItem) {
-      // Add to local cartData for UI
-      setCartData(prev => [...prev, { service_id: service.id, quantity: 1 }]);
-    }
-  }, [cartData, handleCartAction, setCartData]);
+  handleCartAction({
+    serviceId: service.id,
+    operation: "add",
+    currentQuantity
+  });
+
+  if (!existingItem) {
+    // Add to local cartData for UI
+    setCartData(prev => [...prev, { service_id: service.id, quantity: 1 }]);
+  }
+}, [cartData, handleCartAction, setCartData, isLoggedIn]); // include isLoggedIn in dependencies
+
 
   // Increase quantity
   const handleIncreaseQty = useCallback(async (service) => {
@@ -521,9 +527,9 @@ console.log("pageData", pageData);
         </div>
         <h1 className="text-3xl font-bold text-gray-800">404 - City Not Found</h1>
         <p className="mt-3 text-gray-600 text-lg max-w-md text-center">
-  Oops! The city you are looking for doesn&apos;t exist in our service area.
-  Please check the link or go back.
-</p>
+          Oops! The city you are looking for doesn&apos;t exist in our service area.
+          Please check the link or go back.
+        </p>
 
         <button
           onClick={() => window.history.back()}
@@ -539,7 +545,7 @@ console.log("pageData", pageData);
 
 
 
-  
+
 
 
 
@@ -554,362 +560,362 @@ console.log("pageData", pageData);
         <div className="max-w-7xl mx-auto p-6">
           {!isCustomerCare ? (
             <div className="grid lg:grid-cols-12 gap-6">
-            {/* Left Sidebar - Service Categories - STICKY */}
-            <div className="lg:col-span-2">
-              <div className="sticky top-20 bg-white rounded-lg p-4 shadow-sm">
-                <div className="flex items-center gap-2 mb-4">
-                  <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                    <Check className="h-4 w-4 text-blue-600" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-red-500">{pageData?.page_name}</p>
-                    {/* <p className="text-xs text-gray-600"></p> */}
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 lg:grid-cols-1 gap-3">
-                  {serviceCategories.map((category) => {
-                    const IconComponent = category.icon;
-                    const isSelected = selectedCategory === category.id;
-                    return (
-                      <div
-                        key={category.id}
-                        onClick={() => handleCategorySelect(category.id)}
-                        className={`flex flex-col items-center p-3 rounded-lg border transition-all cursor-pointer ${isSelected
-                          ? 'border-blue-500 bg-blue-50 shadow-md'
-                          : 'border-gray-200 hover:bg-gray-50'
-                          }`}
-                      >
-                        <div className={`w-12 h-12 rounded-lg ${isSelected ? 'bg-blue-500 text-white' : category.color
-                          } flex items-center justify-center mb-2 transition-all`}>
-                          <IconComponent className="h-6 w-6" />
-                        </div>
-                        <span className={`text-xs font-medium text-center transition-all ${isSelected ? 'text-blue-600' : 'text-gray-700'
-                          }`}>{category.name}</span>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
-
-            {/* Main Content - Hero and Services - SCROLLABLE */}
-            <div className="lg:col-span-6">
-              {/* Hero Section */}
-              <Image
-                src={RoServiceCare}
-                alt="RO Service Care"
-                priority
-                loading="eager"
-                className="hidden md:block rounded-xl shadow-lg object-contain mb-4"
-              />
-
-              {/* Services Section */}
-              <div ref={servicesRef} className="mb-6">
-                <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-2xl font-bold text-gray-900">{currentCategoryName}</h2>
-                  <div className="text-sm text-gray-500">
-                    {filteredServices.length} service{filteredServices.length !== 1 ? 's' : ''} available
-                  </div>
-                </div>
-
-                {isLoading ? (
-                  <div className="space-y-4">
-                    {[1, 2, 3].map((i) => (
-                      <div key={i} className="bg-white rounded-lg p-6 shadow-sm border border-gray-200 animate-pulse">
-                        <div className="flex flex-col lg:flex-row gap-6">
-                          <div className="flex-1">
-                            <div className="h-6 bg-gray-200 rounded mb-3"></div>
-                            <div className="space-y-2">
-                              <div className="h-4 bg-gray-200 rounded"></div>
-                              <div className="h-4 bg-gray-200 rounded"></div>
-                              <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-                            </div>
-                          </div>
-                          <div className="lg:w-48 flex flex-col items-center gap-4">
-                            <div className="w-32 h-24 bg-gray-200 rounded-lg"></div>
-                            <div className="w-20 h-8 bg-gray-200 rounded"></div>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : filteredServices.length === 0 ? (
-                  <div className="bg-white rounded-lg p-8 shadow-sm border border-gray-200 text-center">
-                    <div className="text-gray-400 mb-4">
-                      <Wrench className="h-16 w-16 mx-auto" />
+              {/* Left Sidebar - Service Categories - STICKY */}
+              <div className="lg:col-span-2">
+                <div className="sticky top-20 bg-white rounded-lg p-4 shadow-sm">
+                  <div className="flex items-center gap-2 mb-4">
+                    <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                      <Check className="h-4 w-4 text-blue-600" />
                     </div>
-                    <h3 className="text-xl font-semibold text-gray-600 mb-2">No Services Available</h3>
-                    <p className="text-gray-500">Services for this category will be available soon.</p>
+                    <div>
+                      <p className="text-sm font-medium text-red-500">{pageData?.page_name}</p>
+                      {/* <p className="text-xs text-gray-600"></p> */}
+                    </div>
                   </div>
-                ) : (
-                  <div className="space-y-4">
-                    {filteredServices.map((service) => {
-                      const cartItem = getCartItemForService(service);
-                      const inCart = !!cartItem;
-                      const quantity = cartItem ? parseInt(cartItem.quantity) || 0 : 0;
-
+                  <div className="grid grid-cols-2 lg:grid-cols-1 gap-3">
+                    {serviceCategories.map((category) => {
+                      const IconComponent = category.icon;
+                      const isSelected = selectedCategory === category.id;
                       return (
-                        <div key={service.id} className="bg-white rounded-lg p-6 shadow-sm border border-gray-200 hover:border-blue-300 hover:shadow-md transition-all">
-                          <div className="flex flex-row gap-4 p-3 rounded-xl border border-gray-200 shadow-sm">
-                            {/* Service Info */}
-                            <div className="flex-1">
-                              <div className="flex items-start justify-between mb-2">
-                                <h3 className="text-base sm:text-lg font-bold text-gray-900">
-                                  {service.service_name}
-                                </h3>
-                                {inCart && (
-                                  <span className="bg-green-100 text-green-600 px-2 py-0.5 rounded-full text-[10px] sm:text-xs font-medium">
-                                    Added ({quantity})
-                                  </span>
-                                )}
-                              </div>
-
-                              <ul className="space-y-1 text-gray-700 text-xs sm:text-sm mb-3">
-                                {parseDescription(service.description).map((point, i) => (
-                                  <li key={i} className="flex items-start gap-1">
-                                    <span className="text-gray-400 mt-0.5">•</span>
-                                    <span>{point}</span>
-                                  </li>
-                                ))}
-                              </ul>
-
-                              {/* Duration + Warranty */}
-                              <div className="flex items-center gap-3 text-[11px] sm:text-xs text-gray-500">
-                                <div className="flex items-center gap-1">
-                                  <Clock className="h-3 w-3" />
-                                  {service.duration}
-                                </div>
-                                <div className="flex items-center gap-1">
-                                  <Shield className="h-3 w-3" />
-                                  {service.warranty} warranty
-                                </div>
-                              </div>
-
-                              {/* Discount */}
-                              {service.price_without_discount > service.price && (
-                                <div className="flex items-center gap-2 mt-1">
-                                  <span className="text-xs text-gray-500 line-through">
-                                    ₹{service.price_without_discount}
-                                  </span>
-                                  <span className="text-xs bg-green-100 text-green-600 px-1.5 py-0.5 rounded">
-                                    Save ₹{service.price_without_discount - service.price}
-                                  </span>
-                                </div>
-                              )}
-                            </div>
-
-                            {/* Image + Price + Button */}
-                            <div className="w-28 sm:w-40 flex flex-col items-center gap-2">
-                              <div className="w-20 h-16 sm:w-28 sm:h-20 bg-gradient-to-br from-blue-100 to-blue-200 rounded-lg flex items-center justify-center overflow-hidden">
-                                {service.image && service.image !== "/api/placeholder/150/120" ? (
-                                  <Image
-                                    src={service.image}
-                                    alt={service.service_name}
-                                    className="w-full h-full object-cover"
-                                    width={112}
-                                    height={80}
-                                  />
-                                ) : (
-                                  <Wrench className="h-6 w-6 sm:h-8 sm:w-8 text-blue-600" />
-                                )}
-                              </div>
-
-                              <div className="text-center">
-                                <div className="text-lg sm:text-xl font-bold text-gray-900">
-                                  ₹{service.price}
-                                </div>
-                              </div>
-
-                              {!cartData.find(item => item.service_id === service.id) ? (
-                                <button
-                                  onClick={() => handleAddToCart(service)}
-                                  className="bg-blue-600 text-white text-xs sm:text-sm px-4 py-1.5 rounded-lg font-medium hover:bg-blue-700 transition-colors flex items-center gap-1"
-                                >
-                                  <ShoppingCart className="h-3 w-3" />
-                                  Add
-                                </button>
-                              ) : (
-                                <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1">
-                                  <button
-                                    onClick={() => handleDecreaseQty(service)}
-                                    className="w-6 h-6 sm:w-8 sm:h-8 rounded bg-white text-gray-600 flex items-center justify-center hover:bg-gray-50 shadow-sm"
-                                  >
-                                    <Minus className="h-3 w-3 sm:h-4 sm:w-4" />
-                                  </button>
-                                  <span className="font-medium min-w-[20px] sm:min-w-[30px] text-center text-xs sm:text-sm">
-                                    {cartData.find(item => item.service_id === service.id)?.quantity || 0}
-                                  </span>
-                                  <button
-                                    onClick={() => handleIncreaseQty(service)}
-                                    className="w-6 h-6 sm:w-8 sm:h-8 rounded bg-white text-gray-600 flex items-center justify-center hover:bg-gray-50 shadow-sm"
-                                  >
-                                    <Plus className="h-3 w-3 sm:h-4 sm:w-4" />
-                                  </button>
-                                </div>
-                              )}
-
-                            </div>
+                        <div
+                          key={category.id}
+                          onClick={() => handleCategorySelect(category.id)}
+                          className={`flex flex-col items-center p-3 rounded-lg border transition-all cursor-pointer ${isSelected
+                            ? 'border-blue-500 bg-blue-50 shadow-md'
+                            : 'border-gray-200 hover:bg-gray-50'
+                            }`}
+                        >
+                          <div className={`w-12 h-12 rounded-lg ${isSelected ? 'bg-blue-500 text-white' : category.color
+                            } flex items-center justify-center mb-2 transition-all`}>
+                            <IconComponent className="h-6 w-6" />
                           </div>
+                          <span className={`text-xs font-medium text-center transition-all ${isSelected ? 'text-blue-600' : 'text-gray-700'
+                            }`}>{category.name}</span>
                         </div>
                       );
                     })}
                   </div>
-                )}
+                </div>
               </div>
-            </div>
 
-            {/* Right Sidebar - Cart and Info - STICKY */}
-            <div className="lg:col-span-4">
-              <div className="sticky top-20 space-y-6 max-h-[calc(100vh-6rem)] overflow-y-auto">
-                {/* Cart Section */}
-                <div className="bg-white rounded-lg shadow-sm hidden sm:block">
-                  <div className="p-4 border-b border-gray-200">
-                    <div className="flex items-center justify-between">
-                      <h3 className="text-lg font-semibold text-gray-900">Cart</h3>
-                      {totalItems > 0 && (
-                        <div className="bg-blue-100 text-blue-600 px-2 py-1 rounded-full text-sm font-medium">
-                          {totalItems}
+              {/* Main Content - Hero and Services - SCROLLABLE */}
+              <div className="lg:col-span-6">
+                {/* Hero Section */}
+                <Image
+                  src={RoServiceCare}
+                  alt="RO Service Care"
+                  priority
+                  loading="eager"
+                  className="hidden md:block rounded-xl shadow-lg object-contain mb-4"
+                />
+
+                {/* Services Section */}
+                <div ref={servicesRef} className="mb-6">
+                  <div className="flex items-center justify-between mb-6">
+                    <h2 className="text-2xl font-bold text-gray-900">{currentCategoryName}</h2>
+                    <div className="text-sm text-gray-500">
+                      {filteredServices.length} service{filteredServices.length !== 1 ? 's' : ''} available
+                    </div>
+                  </div>
+
+                  {isLoading ? (
+                    <div className="space-y-4">
+                      {[1, 2, 3].map((i) => (
+                        <div key={i} className="bg-white rounded-lg p-6 shadow-sm border border-gray-200 animate-pulse">
+                          <div className="flex flex-col lg:flex-row gap-6">
+                            <div className="flex-1">
+                              <div className="h-6 bg-gray-200 rounded mb-3"></div>
+                              <div className="space-y-2">
+                                <div className="h-4 bg-gray-200 rounded"></div>
+                                <div className="h-4 bg-gray-200 rounded"></div>
+                                <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                              </div>
+                            </div>
+                            <div className="lg:w-48 flex flex-col items-center gap-4">
+                              <div className="w-32 h-24 bg-gray-200 rounded-lg"></div>
+                              <div className="w-20 h-8 bg-gray-200 rounded"></div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : filteredServices.length === 0 ? (
+                    <div className="bg-white rounded-lg p-8 shadow-sm border border-gray-200 text-center">
+                      <div className="text-gray-400 mb-4">
+                        <Wrench className="h-16 w-16 mx-auto" />
+                      </div>
+                      <h3 className="text-xl font-semibold text-gray-600 mb-2">No Services Available</h3>
+                      <p className="text-gray-500">Services for this category will be available soon.</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {filteredServices.map((service) => {
+                        const cartItem = getCartItemForService(service);
+                        const inCart = !!cartItem;
+                        const quantity = cartItem ? parseInt(cartItem.quantity) || 0 : 0;
+
+                        return (
+                          <div key={service.id} className="bg-white rounded-lg p-6 shadow-sm border border-gray-200 hover:border-blue-300 hover:shadow-md transition-all">
+                            <div className="flex flex-row gap-4 p-3 rounded-xl border border-gray-200 shadow-sm">
+                              {/* Service Info */}
+                              <div className="flex-1">
+                                <div className="flex items-start justify-between mb-2">
+                                  <h3 className="text-base sm:text-lg font-bold text-gray-900">
+                                    {service.service_name}
+                                  </h3>
+                                  {inCart && (
+                                    <span className="bg-green-100 text-green-600 px-2 py-0.5 rounded-full text-[10px] sm:text-xs font-medium">
+                                      Added ({quantity})
+                                    </span>
+                                  )}
+                                </div>
+
+                                <ul className="space-y-1 text-gray-700 text-xs sm:text-sm mb-3">
+                                  {parseDescription(service.description).map((point, i) => (
+                                    <li key={i} className="flex items-start gap-1">
+                                      <span className="text-gray-400 mt-0.5">•</span>
+                                      <span>{point}</span>
+                                    </li>
+                                  ))}
+                                </ul>
+
+                                {/* Duration + Warranty */}
+                                <div className="flex items-center gap-3 text-[11px] sm:text-xs text-gray-500">
+                                  <div className="flex items-center gap-1">
+                                    <Clock className="h-3 w-3" />
+                                    {service.duration}
+                                  </div>
+                                  <div className="flex items-center gap-1">
+                                    <Shield className="h-3 w-3" />
+                                    {service.warranty} warranty
+                                  </div>
+                                </div>
+
+                                {/* Discount */}
+                                {service.price_without_discount > service.price && (
+                                  <div className="flex items-center gap-2 mt-1">
+                                    <span className="text-xs text-gray-500 line-through">
+                                      ₹{service.price_without_discount}
+                                    </span>
+                                    <span className="text-xs bg-green-100 text-green-600 px-1.5 py-0.5 rounded">
+                                      Save ₹{service.price_without_discount - service.price}
+                                    </span>
+                                  </div>
+                                )}
+                              </div>
+
+                              {/* Image + Price + Button */}
+                              <div className="w-28 sm:w-40 flex flex-col items-center gap-2">
+                                <div className="w-20 h-16 sm:w-28 sm:h-20 bg-gradient-to-br from-blue-100 to-blue-200 rounded-lg flex items-center justify-center overflow-hidden">
+                                  {service.image && service.image !== "/api/placeholder/150/120" ? (
+                                    <Image
+                                      src={service.image}
+                                      alt={service.service_name}
+                                      className="w-full h-full object-cover"
+                                      width={112}
+                                      height={80}
+                                    />
+                                  ) : (
+                                    <Wrench className="h-6 w-6 sm:h-8 sm:w-8 text-blue-600" />
+                                  )}
+                                </div>
+
+                                <div className="text-center">
+                                  <div className="text-lg sm:text-xl font-bold text-gray-900">
+                                    ₹{service.price}
+                                  </div>
+                                </div>
+
+                                {!cartData.find(item => item.service_id === service.id) ? (
+                                  <button
+                                    onClick={() => handleAddToCart(service)}
+                                    className="bg-blue-600 text-white text-xs sm:text-sm px-4 py-1.5 rounded-lg font-medium hover:bg-blue-700 transition-colors flex items-center gap-1"
+                                  >
+                                    <ShoppingCart className="h-3 w-3" />
+                                    Add
+                                  </button>
+                                ) : (
+                                  <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1">
+                                    <button
+                                      onClick={() => handleDecreaseQty(service)}
+                                      className="w-6 h-6 sm:w-8 sm:h-8 rounded bg-white text-gray-600 flex items-center justify-center hover:bg-gray-50 shadow-sm"
+                                    >
+                                      <Minus className="h-3 w-3 sm:h-4 sm:w-4" />
+                                    </button>
+                                    <span className="font-medium min-w-[20px] sm:min-w-[30px] text-center text-xs sm:text-sm">
+                                      {cartData.find(item => item.service_id === service.id)?.quantity || 0}
+                                    </span>
+                                    <button
+                                      onClick={() => handleIncreaseQty(service)}
+                                      className="w-6 h-6 sm:w-8 sm:h-8 rounded bg-white text-gray-600 flex items-center justify-center hover:bg-gray-50 shadow-sm"
+                                    >
+                                      <Plus className="h-3 w-3 sm:h-4 sm:w-4" />
+                                    </button>
+                                  </div>
+                                )}
+
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Right Sidebar - Cart and Info - STICKY */}
+              <div className="lg:col-span-4">
+                <div className="sticky top-20 space-y-6 max-h-[calc(100vh-6rem)] overflow-y-auto">
+                  {/* Cart Section */}
+                  <div className="bg-white rounded-lg shadow-sm hidden sm:block">
+                    <div className="p-4 border-b border-gray-200">
+                      <div className="flex items-center justify-between">
+                        <h3 className="text-lg font-semibold text-gray-900">Cart</h3>
+                        {totalItems > 0 && (
+                          <div className="bg-blue-100 text-blue-600 px-2 py-1 rounded-full text-sm font-medium">
+                            {totalItems}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="p-4">
+                      {cartData.length === 0 ? (
+                        <div className="text-center py-8">
+                          <ShoppingCart className="h-12 w-12 text-gray-300 mx-auto mb-3" />
+                          <p className="text-gray-500">No services added.</p>
+                        </div>
+                      ) : (
+                        <div className="space-y-4">
+                          {cartData.map((item, index) => {
+                            const service = allServices.find(s => s.id == item.service_id);
+                            const serviceName = item.service_name || service?.service_name || 'Service';
+                            const servicePrice = parseInt(item.price) || 0;
+                            const serviceQuantity = parseInt(item.quantity) || 0;
+
+                            return (
+                              <div key={index} className="border border-gray-200 rounded-lg p-3">
+                                <h4 className="font-medium text-gray-900 mb-2">{serviceName}</h4>
+                                <div className="flex items-center justify-between mb-3">
+                                  <span className="text-blue-600 font-semibold">₹{servicePrice}</span>
+                                </div>
+
+                                <div className="flex items-center justify-between">
+                                  <div className="flex items-center gap-2">
+                                    <button
+                                      onClick={() => service && handleDecreaseQty(service)}
+                                      className="w-6 h-6 rounded bg-gray-200 text-gray-600 flex items-center justify-center hover:bg-gray-300"
+                                    >
+                                      <Minus className="h-3 w-3" />
+                                    </button>
+                                    <span className="font-medium min-w-[20px] text-center">{serviceQuantity}</span>
+                                    <button
+                                      onClick={() => service && handleIncreaseQty(service)}
+                                      className="w-6 h-6 rounded bg-gray-200 text-gray-600 flex items-center justify-center hover:bg-gray-300"
+                                    >
+                                      <Plus className="h-3 w-3" />
+                                    </button>
+                                  </div>
+                                  <span className="font-semibold">₹{servicePrice * serviceQuantity}</span>
+                                </div>
+                              </div>
+                            );
+                          })}
+
+                          {/* Cart Total and Checkout */}
+                          <div className="border-t pt-4">
+                            <div className="flex justify-between items-center mb-4">
+                              <span className="font-semibold">Total</span>
+                              <span className="text-xl font-bold text-blue-600">₹{totalPrice}</span>
+                            </div>
+                            <Link href="/checkout">
+                              <button className="w-full bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700 transition-colors">
+                                Proceed to Checkout ({totalItems} items)
+                              </button>
+                            </Link>
+                          </div>
                         </div>
                       )}
                     </div>
                   </div>
 
-                  <div className="p-4">
-                    {cartData.length === 0 ? (
-                      <div className="text-center py-8">
-                        <ShoppingCart className="h-12 w-12 text-gray-300 mx-auto mb-3" />
-                        <p className="text-gray-500">No services added.</p>
+
+                  {/* Why Choose Us Section */}
+                  <div className="bg-white rounded-lg p-4 shadow-sm">
+                    <div className="flex items-center gap-2 mb-4">
+                      <div className="w-5 h-5 bg-blue-100 rounded-full flex items-center justify-center">
+                        <Check className="h-3 w-3 text-blue-600" />
                       </div>
-                    ) : (
-                      <div className="space-y-4">
-                        {cartData.map((item, index) => {
-                          const service = allServices.find(s => s.id == item.service_id);
-                          const serviceName = item.service_name || service?.service_name || 'Service';
-                          const servicePrice = parseInt(item.price) || 0;
-                          const serviceQuantity = parseInt(item.quantity) || 0;
+                      <h3 className="font-semibold text-gray-900">Why Choose Us</h3>
+                    </div>
 
-                          return (
-                            <div key={index} className="border border-gray-200 rounded-lg p-3">
-                              <h4 className="font-medium text-gray-900 mb-2">{serviceName}</h4>
-                              <div className="flex items-center justify-between mb-3">
-                                <span className="text-blue-600 font-semibold">₹{servicePrice}</span>
-                              </div>
-
-                              <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-2">
-                                  <button
-                                    onClick={() => service && handleDecreaseQty(service)}
-                                    className="w-6 h-6 rounded bg-gray-200 text-gray-600 flex items-center justify-center hover:bg-gray-300"
-                                  >
-                                    <Minus className="h-3 w-3" />
-                                  </button>
-                                  <span className="font-medium min-w-[20px] text-center">{serviceQuantity}</span>
-                                  <button
-                                    onClick={() => service && handleIncreaseQty(service)}
-                                    className="w-6 h-6 rounded bg-gray-200 text-gray-600 flex items-center justify-center hover:bg-gray-300"
-                                  >
-                                    <Plus className="h-3 w-3" />
-                                  </button>
-                                </div>
-                                <span className="font-semibold">₹{servicePrice * serviceQuantity}</span>
-                              </div>
-                            </div>
-                          );
-                        })}
-
-                        {/* Cart Total and Checkout */}
-                        <div className="border-t pt-4">
-                          <div className="flex justify-between items-center mb-4">
-                            <span className="font-semibold">Total</span>
-                            <span className="text-xl font-bold text-blue-600">₹{totalPrice}</span>
-                          </div>
-                          <Link href="/checkout">
-                            <button className="w-full bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700 transition-colors">
-                              Proceed to Checkout ({totalItems} items)
-                            </button>
-                          </Link>
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-3">
+                        <User className="h-4 w-4 text-blue-600" />
+                        <div>
+                          <p className="font-medium text-gray-900 text-sm">Expert Professionals</p>
+                          <p className="text-xs text-gray-600">Certified technicians with years of experience</p>
                         </div>
                       </div>
-                    )}
-                  </div>
-                </div>
 
-
-                {/* Why Choose Us Section */}
-                <div className="bg-white rounded-lg p-4 shadow-sm">
-                  <div className="flex items-center gap-2 mb-4">
-                    <div className="w-5 h-5 bg-blue-100 rounded-full flex items-center justify-center">
-                      <Check className="h-3 w-3 text-blue-600" />
-                    </div>
-                    <h3 className="font-semibold text-gray-900">Why Choose Us</h3>
-                  </div>
-
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-3">
-                      <User className="h-4 w-4 text-blue-600" />
-                      <div>
-                        <p className="font-medium text-gray-900 text-sm">Expert Professionals</p>
-                        <p className="text-xs text-gray-600">Certified technicians with years of experience</p>
+                      <div className="flex items-center gap-3">
+                        <Truck className="h-4 w-4 text-blue-600" />
+                        <div>
+                          <p className="font-medium text-gray-900 text-sm">Doorstep Service</p>
+                          <p className="text-xs text-gray-600">We come to you at your convenience</p>
+                        </div>
                       </div>
-                    </div>
 
-                    <div className="flex items-center gap-3">
-                      <Truck className="h-4 w-4 text-blue-600" />
-                      <div>
-                        <p className="font-medium text-gray-900 text-sm">Doorstep Service</p>
-                        <p className="text-xs text-gray-600">We come to you at your convenience</p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-3">
-                      <Clock className="h-4 w-4 text-blue-600" />
-                      <div>
-                        <p className="font-medium text-gray-900 text-sm">Quick Service</p>
-                        <p className="text-xs text-gray-600">Same day or next day service available</p>
+                      <div className="flex items-center gap-3">
+                        <Clock className="h-4 w-4 text-blue-600" />
+                        <div>
+                          <p className="font-medium text-gray-900 text-sm">Quick Service</p>
+                          <p className="text-xs text-gray-600">Same day or next day service available</p>
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
-          ) : <CustomerCarePage/>}
+          ) : <CustomerCarePage />}
           <AwardCertifications />
           <ROServiceContent pageData={pageData} />
 
-       <div className="max-w-9xl mx-auto p-2">
-  {/* ✅ Popular Cities Section */}
-  <section className="bg-white rounded-xl shadow-md p-2">
-    <h2 className="text-2xl font-bold text-blue-600 mb-4">
-      Service in Popular Cities
-    </h2>
-    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-      {popularCities.map((city, idx) => {
-        // city slug
-        const slugCity = city.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+          <div className="max-w-9xl mx-auto p-2">
+            {/* ✅ Popular Cities Section */}
+            <section className="bg-white rounded-xl shadow-md p-2">
+              <h2 className="text-2xl font-bold text-blue-600 mb-4">
+                Service in Popular Cities
+              </h2>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                {popularCities.map((city, idx) => {
+                  // city slug
+                  const slugCity = city.toLowerCase().replace(/[^a-z0-9]+/g, "-");
 
-        // Strip the city from the existing slug (if any)
-        const brandSlug = slug?.split("-").filter(part => !popularCities
-          .map(c => c.toLowerCase().replace(/[^a-z0-9]+/g, "-"))
-          .includes(part)
-        ).join("-");
+                  // Strip the city from the existing slug (if any)
+                  const brandSlug = slug?.split("-").filter(part => !popularCities
+                    .map(c => c.toLowerCase().replace(/[^a-z0-9]+/g, "-"))
+                    .includes(part)
+                  ).join("-");
 
-        // Build the final URL
-        const href = `${brandSlug}-${slugCity}`;
+                  // Build the final URL
+                  const href = `${brandSlug}-${slugCity}`;
 
-        return (
-          <Link
-            key={idx}
-            href={href}
-            className="px-3 py-2 border rounded-lg bg-gray-50 hover:bg-blue-50 text-sm font-medium text-gray-700 hover:text-blue-600 transition"
-          >
-            {safeCapitalize(brandSlug)} Service {city}
-          </Link>
-        );
-      })}
-    </div>
-  </section>
-</div>
+                  return (
+                    <Link
+                      key={idx}
+                      href={href}
+                      className="px-3 py-2 border rounded-lg bg-gray-50 hover:bg-blue-50 text-sm font-medium text-gray-700 hover:text-blue-600 transition"
+                    >
+                      {safeCapitalize(brandSlug)} Service {city}
+                    </Link>
+                  );
+                })}
+              </div>
+            </section>
+          </div>
 
 
           <FaqSectionRO />

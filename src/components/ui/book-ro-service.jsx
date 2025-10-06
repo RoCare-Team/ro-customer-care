@@ -98,6 +98,8 @@ const ROServices = ({ onAddressSubmit, handleClose }) => {
   const [showAddressForm, setShowAddressForm] = useState(false);
   const [message, setMessage] = useState('');
   const [quantity, setQuantity] = useState(0)
+  const [addressLoading, setAddressLoading] = useState(true);
+
 
 
   const [formData, setFormData] = useState({
@@ -140,6 +142,9 @@ const ROServices = ({ onAddressSubmit, handleClose }) => {
     setSelectedAddress(address);
   };
 
+  console.log("selectedAddress",selectedAddress);
+  
+
 
 
 
@@ -149,6 +154,9 @@ const ROServices = ({ onAddressSubmit, handleClose }) => {
 
 
   const cartItems = getCartItems();
+
+  console.log("cartItems", cartItems);
+
   // const findAdressId2 = findAdressId();
 
 
@@ -335,16 +343,20 @@ const ROServices = ({ onAddressSubmit, handleClose }) => {
     }
   }, []);
 
-  const loadRecentAddresses = () => {
-    try {
-      const stored = localStorage.getItem('RecentAddress');
-      const parsed = stored ? JSON.parse(stored) : [];
-      setRecentAddress(Array.isArray(parsed) ? parsed : []);
-    } catch (error) {
-      console.error('Error loading recent addresses:', error);
-      setRecentAddress([]);
-    }
-  };
+const loadRecentAddresses = () => {
+  setAddressLoading(true); // start loader
+
+  try {
+    const stored = localStorage.getItem('RecentAddress');
+    const parsed = stored ? JSON.parse(stored) : [];
+    setRecentAddress(Array.isArray(parsed) ? parsed : []);
+  } catch (error) {
+    console.error('Error loading recent addresses:', error);
+    setRecentAddress([]);
+  } finally {
+    setAddressLoading(false); // stop loader
+  }
+};
 
   const handleCartAction = useCallback(
     async ({ serviceId, operation, type }) => {
@@ -362,7 +374,7 @@ const ROServices = ({ onAddressSubmit, handleClose }) => {
 
       try {
         // Get current quantity directly from modalServices to avoid stale value
-        const serviceItem = modalServices.find(s => s.id === serviceId);
+        const serviceItem = modalServices?.find(s => s.id === serviceId);
         if (!serviceItem) throw new Error("Service not found");
         let newQuantity = serviceItem.quantity || 0;
 
@@ -532,7 +544,7 @@ const ROServices = ({ onAddressSubmit, handleClose }) => {
   };
   console.log("selectedTime", selectedTime, selectedDate);
 
-  
+
 
 
 
@@ -544,7 +556,7 @@ const ROServices = ({ onAddressSubmit, handleClose }) => {
   const handlePaymentCompleted = async (leadtype, redirect = true) => {
     const cust_id = localStorage.getItem("customer_id");
     const cust_mobile = localStorage.getItem("userPhone");
-    const address_id = localStorage.getItem("address_id");
+    const address_id = selectedAddress?.id || "";
     // const cust_email = localStorage.getItem("email" || "userEmail");
     const cust_email = localStorage.getItem("email") || localStorage.getItem("userEmail");
 
@@ -794,7 +806,7 @@ const ROServices = ({ onAddressSubmit, handleClose }) => {
     }
   };
 
-  
+
 
   // Render loading state for main services
   if (isMainLoading) {
@@ -1332,82 +1344,94 @@ const ROServices = ({ onAddressSubmit, handleClose }) => {
                       </button>
                     </div>
 
-                  <div className="max-w-2xl mx-auto bg-white rounded-xl shadow-md p-5 md:p-8">
-      <h2 className="text-lg md:text-xl font-semibold text-gray-800 mb-4">Select Delivery Address</h2>
+                    <div className="max-w-2xl mx-auto bg-white rounded-xl shadow-md p-5 md:p-8">
+                      <h2 className="text-lg md:text-xl font-semibold text-gray-800 mb-4">Select Delivery Address</h2>
 
-      <div className="space-y-2 md:space-y-3 mb-4">
-        {recentAddress.map((address) => {
-          const AddressIcon = getAddressIcon(address.type);
+                      <div className="space-y-2 md:space-y-3 mb-4">
+  {addressLoading ? (
+    <div className="flex flex-col gap-2">
+      {/* Skeleton cards */}
+      {[1, 2, 3].map((_, i) => (
+        <div key={i} className="p-3 md:p-4 border-2 rounded-xl animate-pulse bg-gray-100 h-24"></div>
+      ))}
+    </div>
+  ) : recentAddress.length === 0 ? (
+    <p className="text-center text-gray-500 py-4">No addresses found.</p>
+  ) : (
+    recentAddress.map((address) => {
+      const AddressIcon = getAddressIcon(address.type);
 
-          return (
+      return (
+        <div
+          key={address.id}
+          onClick={() => handleSelectAddress(address)}
+          className={`p-3 md:p-4 border-2 rounded-xl cursor-pointer transition-all duration-300 transform hover:scale-[1.01] ${
+            selectedAddress?.id === address.id
+              ? "border-blue-500 bg-blue-50 shadow-sm"
+              : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
+          }`}
+        >
+          <div className="flex items-start space-x-2 md:space-x-3">
+            {/* Icon section */}
             <div
-              key={address.id}
-              onClick={() => handleSelectAddress(address)}
-              className={`p-3 md:p-4 border-2 rounded-xl cursor-pointer transition-all duration-300 transform hover:scale-[1.01] ${
-                selectedAddress?.id === address.id
-                  ? "border-blue-500 bg-blue-50 shadow-sm"
-                  : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
+              className={`w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
+                address.type === "home"
+                  ? "bg-green-100"
+                  : address.type === "work"
+                  ? "bg-blue-100"
+                  : "bg-gray-100"
               }`}
             >
-              <div className="flex items-start space-x-2 md:space-x-3">
-                {/* Icon section */}
-                <div
-                  className={`w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
-                    address.type === "home"
-                      ? "bg-green-100"
-                      : address.type === "work"
-                      ? "bg-blue-100"
-                      : "bg-gray-100"
-                  }`}
-                >
-                  <AddressIcon
-                    className={`w-4 md:w-5 h-4 md:h-5 ${
-                      address.type === "home"
-                        ? "text-green-600"
-                        : address.type === "work"
-                        ? "text-blue-600"
-                        : "text-gray-600"
-                    }`}
-                  />
-                </div>
-
-                {/* Address details */}
-                <div className="flex-1">
-                  <div className="flex items-center space-x-2 mb-1">
-                    <span className="font-bold text-gray-900 capitalize text-sm md:text-base">
-                      {address.type}
-                    </span>
-                    <span className="text-xs md:text-sm text-gray-500">•</span>
-                    <span className="text-xs md:text-sm font-medium text-gray-700">
-                      {address.area}
-                    </span>
-                  </div>
-                  <p className="text-xs md:text-sm text-gray-600 mb-1">{address.address}</p>
-                  {address.landmark && (
-                    <p className="text-[10px] md:text-xs text-gray-500">Near {address.landmark}</p>
-                  )}
-                  <p className="text-[10px] md:text-xs font-medium text-gray-700 mt-1">
-                    PIN: {address.pincode}
-                  </p>
-                </div>
-
-                {/* Selected check icon */}
-                {selectedAddress?.id === address.id && (
-                  <CheckCircle className="w-5 md:w-6 h-5 md:h-6 text-blue-600 flex-shrink-0" />
-                )}
-              </div>
+              <AddressIcon
+                className={`w-4 md:w-5 h-4 md:h-5 ${
+                  address.type === "home"
+                    ? "text-green-600"
+                    : address.type === "work"
+                    ? "text-blue-600"
+                    : "text-gray-600"
+                }`}
+              />
             </div>
-          );
-        })}
-      </div>
 
-      {selectedAddress && (
-        <div className="mt-4 p-3 rounded-lg bg-blue-50 border border-blue-200 text-sm text-gray-800">
-          ✅ Selected Address:{" "}
-          <span className="font-semibold">{selectedAddress.area}</span> ({selectedAddress.type})
+            {/* Address details */}
+            <div className="flex-1">
+              <div className="flex items-center space-x-2 mb-1">
+                <span className="font-bold text-gray-900 capitalize text-sm md:text-base">
+                  {address.type}
+                </span>
+                <span className="text-xs md:text-sm text-gray-500">•</span>
+                <span className="text-xs md:text-sm font-medium text-gray-700">
+                  {address.area}
+                </span>
+              </div>
+              <p className="text-xs md:text-sm text-gray-600 mb-1">{address.address}</p>
+              {address.landmark && (
+                <p className="text-[10px] md:text-xs text-gray-500">Near {address.landmark}</p>
+              )}
+              <p className="text-[10px] md:text-xs font-medium text-gray-700 mt-1">
+                PIN: {address.pincode}
+              </p>
+            </div>
+
+            {/* Selected check icon */}
+            {selectedAddress?.id === address.id && (
+              <CheckCircle className="w-5 md:w-6 h-5 md:h-6 text-blue-600 flex-shrink-0" />
+            )}
+          </div>
         </div>
-      )}
-    </div>
+      );
+    })
+  )}
+</div>
+
+
+                      {selectedAddress && (
+                        <div className="mt-4 p-3 rounded-lg bg-blue-50 border border-blue-200 text-sm text-gray-800">
+                          ✅ Selected Address:
+                          <span className="font-semibold">{selectedAddress.area}</span> ({selectedAddress.type})
+                        </div>
+                      )}
+                    </div>
                     {showAddressForm && (
                       <form
                         onSubmit={handleSubmit}

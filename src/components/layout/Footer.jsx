@@ -1,6 +1,8 @@
 "use client";
 
 import { Facebook, Twitter, Linkedin, Instagram } from "lucide-react";
+import FloatingChatButton from "../ui/FloatingChatButton";
+import FloatingWhatsAppButton from "../ui/FloatingWhatsAppButton";
 
 const Footer = () => {
   // Top 5 Kent Customer Care cities
@@ -9,6 +11,7 @@ const Footer = () => {
 
 
   return (
+   <>
     <footer className="bg-[#2d1457] text-white pt-8">
       {/* Top Section */}
       <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-6 pb-6">
@@ -81,6 +84,13 @@ const Footer = () => {
         </div>
       </div>
     </footer>
+    <div className="fixed bottom-20 right-5 flex flex-col items-end gap-4 z-50">
+  <FloatingChatButton />
+  <FloatingWhatsAppButton />
+</div>
+
+
+   </>
   );
 };
 
