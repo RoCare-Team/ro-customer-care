@@ -40,18 +40,20 @@ export default function ROServicePage() {
   const [invalid, setInvalid] = useState(false);
   const { isLoggedIn, handleLoginSuccess } = useAuth();
 
+    const [pageData, setPageData] = useState(null);
+
 
   // const cityWase
 
-  
-  
-  
+
+
+
   // Ref for auto-scroll
   const servicesRef = useRef(null);
   // const slugCity = slug ? slug.toString().replace("brands");
 
   // City data
-const popularCities = [
+  const popularCities = [
     "Gurgaon",
     "Delhi",
     "Mumbai",
@@ -82,23 +84,23 @@ const popularCities = [
   ];
 
 
-//   function capitalizeWords(str) {
-//   return str
-//     .split("-")
-//     .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-//     .join(" ");
-// }
+  //   function capitalizeWords(str) {
+  //   return str
+  //     .split("-")
+  //     .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+  //     .join(" ");
+  // }
 
-// // Example slug
-// const parts = slug?.split("-");
+  // // Example slug
+  // const parts = slug?.split("-");
 
-// const brand = capitalizeWords(parts[0]); // "Kent"
-// const category = capitalizeWords(parts.slice(1, parts.length - 1).join("-")); // "Customer Care"
-// const citys = capitalizeWords(parts.slice(-1).join("-")); // "Delhi"
+  // const brand = capitalizeWords(parts[0]); // "Kent"
+  // const category = capitalizeWords(parts.slice(1, parts.length - 1).join("-")); // "Customer Care"
+  // const citys = capitalizeWords(parts.slice(-1).join("-")); // "Delhi"
 
-// console.log("Brand:", brand);       // Kent
-// console.log("Category:", category); // Customer Care
-// console.log("City:", citys);         // Delhi
+  // console.log("Brand:", brand);       // Kent
+  // console.log("Category:", category); // Customer Care
+  // console.log("City:", citys);         // Delhi
 
 
   // Load cart data from localStorage
@@ -228,21 +230,15 @@ const popularCities = [
   }, [fetchServices]);
 
   // string ke har word ka first letter capital
-function capitalizeWords(str) {
-  if (!str) return "";
-  return str
-    .split("-")      // ya split(" ") agar space se words hain
-    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-    .join(" ");
-}
 
-function safeCapitalize(str) {
-  if (!str) return "";
-  return str
-    .split("-")
-    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-    .join(" ");
-}
+
+  function safeCapitalize(str) {
+    if (!str) return "";
+    return str
+      .split("-")
+      .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+      .join(" ");
+  }
 
 
 
@@ -447,12 +443,12 @@ function safeCapitalize(str) {
     );
   }, [cartData]);
 
-  
+
 
 
   // const slugFilter = slug.split("-")
   // console.log("slugFilter",slugFilter);
-  
+
 
   // Service page: add to cart button or checkout buttons
 
@@ -492,6 +488,46 @@ function safeCapitalize(str) {
   }
 
 
+const getPageData = useCallback(async (pageUrl) => {
+    try {
+      const url = pageUrl || (Array.isArray(slug) ? slug[0] : slug);
+      if (!url) return null;
+
+      const response = await fetch(`/api/getPage?page_url=${encodeURIComponent(url)}`);
+      if (response.ok) {
+        const data = await response.json();
+        console.log("Page data fetched:", data);
+        return data;
+      } else {
+        console.error("Failed to fetch page data:", response.status);
+        return null;
+      }
+    } catch (error) {
+      console.error("Error fetching page data:", error);
+      return null;
+    }
+  }, [slug]);
+
+  useEffect(() => {
+    if (!slug) return;
+
+    const fetchData = async () => {
+      const data = await getPageData();
+      setPageData(data);
+    };
+
+    fetchData();
+  }, [slug, getPageData]);
+
+
+  console.log("pageData",pageData);
+  
+
+
+
+
+
+
 
   return (
     <>
@@ -507,8 +543,8 @@ function safeCapitalize(str) {
                     <Check className="h-4 w-4 text-blue-600" />
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-red-500">{safeCapitalize(slug)}  {city}</p>
-                    <p className="text-xs text-gray-600">@7065012902</p>
+                    <p className="text-sm font-medium text-red-500">{pageData?.page_name}</p>
+                    {/* <p className="text-xs text-gray-600"></p> */}
                   </div>
                 </div>
                 <div className="grid grid-cols-2 lg:grid-cols-1 gap-3">
@@ -817,43 +853,46 @@ function safeCapitalize(str) {
             </div>
           </div>
           <AwardCertifications />
-          <ROServiceContent city={slug} />
+          <ROServiceContent pageData={pageData} />
 
-          <div className="max-w-9xl mx-auto p-2">
+       <div className="max-w-9xl mx-auto p-2">
+  {/* ✅ Popular Cities Section */}
+  <section className="bg-white rounded-xl shadow-md p-2">
+    <h2 className="text-2xl font-bold text-blue-600 mb-4">
+      Service in Popular Cities
+    </h2>
+    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+      {popularCities.map((city, idx) => {
+        // city slug
+        const slugCity = city.toLowerCase().replace(/[^a-z0-9]+/g, "-");
 
-      {/* ✅ Popular Cities Section */}
-      <section className="bg-white rounded-xl shadow-md p-2">
-        <h2 className="text-2xl font-bold text-blue-600 mb-4">
-         Service in Popular Cities
-        </h2>
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-  {popularCities.map((city, idx) => {
-    // city slug
-    const slugCity = city.toLowerCase().replace(/[^a-z0-9]+/g, "-");
-    
-    // base slug without city
-    const baseSlug = slug?.split("-").slice(0, -1).join("-"); 
-    // Agar slug me city nahi hai to baseSlug = slug
+        // Strip the city from the existing slug (if any)
+        const brandSlug = slug?.split("-").filter(part => !popularCities
+          .map(c => c.toLowerCase().replace(/[^a-z0-9]+/g, "-"))
+          .includes(part)
+        ).join("-");
 
-    const href = `${baseSlug || slug}-${slugCity}`;
+        // Build the final URL
+        const href = `${brandSlug}-${slugCity}`;
 
-    return (
-      <Link
-        key={idx}
-        href={`${href}`}
-        className="px-3 py-2 border rounded-lg bg-gray-50 hover:bg-blue-50 text-sm font-medium text-gray-700 hover:text-blue-600 transition"
-      >
-{safeCapitalize(slug)} Service {city}
-      </Link>
-    );
-  })}
+        return (
+          <Link
+            key={idx}
+            href={href}
+            className="px-3 py-2 border rounded-lg bg-gray-50 hover:bg-blue-50 text-sm font-medium text-gray-700 hover:text-blue-600 transition"
+          >
+            {safeCapitalize(brandSlug)} Service {city}
+          </Link>
+        );
+      })}
+    </div>
+  </section>
 </div>
 
-      </section>
-    </div>
-              <FaqSectionRO />
 
-          <BlueNearbyAreas/>
+          <FaqSectionRO />
+
+          <BlueNearbyAreas />
           <OurBrandSection />
         </div>
       </div>
@@ -867,35 +906,44 @@ function safeCapitalize(str) {
 
 
       {/* Mobile View Cart Button - Only for sm screens */}
-      <Link href="/checkout">
-        <button className="bg-green-600 text-white rounded-full shadow-xl flex items-center justify-center gap-4 px-6 py-3 min-w-[220px]">
-          {totalItems > 0 && (
-            <div className="fixed bottom-6 left-1/2 -translate-x-1/2 sm:block md:hidden z-50" style={{ marginBottom: "85px" }}>
-              <Link href="/checkout">
-                <button className="bg-green-600 text-white rounded-full shadow-xl flex items-center justify-center gap-4 px-6 py-3 min-w-[220px]">
-                  {/* Left circle */}
-                  <div className="w-6 h-6 bg-white rounded-full flex items-center justify-center">
-                    <ShoppingCart className="h-4 w-4 text-green-600" />
-                  </div>
+      {totalItems > 0 && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 block md:hidden z-50" style={{ marginBottom: "85px" }}>
+          <Link href="/checkout">
+            <button className="bg-green-600 text-white rounded-full shadow-xl flex items-center justify-center gap-4 px-6 py-3 min-w-[220px]">
+              {/* Left circle */}
+              <div className="w-6 h-6 bg-white rounded-full flex items-center justify-center">
+                <ShoppingCart className="h-4 w-4 text-green-600" />
+              </div>
 
-                  {/* Text */}
-                  <div className="text-center">
-                    <div className="font-semibold text-sm">View cart</div>
-                    <div className="text-xs font-medium">{totalItems} ITEM{totalItems !== 1 ? 'S' : ''}</div>
-                  </div>
+              {/* Text */}
+              <div className="text-center">
+                <div className="font-semibold text-sm">View cart</div>
+                <div className="text-xs font-medium">
+                  {totalItems} ITEM{totalItems !== 1 ? "S" : ""}
+                </div>
+              </div>
 
-                  {/* Right circle */}
-                  <div className="w-6 h-6 bg-white rounded-full flex items-center justify-center">
-                    <svg className="h-3 w-3 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                  </div>
-                </button>
-              </Link>
-            </div>
-          )}
-        </button>
-      </Link>
+              {/* Right circle */}
+              <div className="w-6 h-6 bg-white rounded-full flex items-center justify-center">
+                <svg
+                  className="h-3 w-3 text-green-600"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 5l7 7-7 7"
+                  />
+                </svg>
+              </div>
+            </button>
+          </Link>
+        </div>
+      )}
+
 
     </>
   );

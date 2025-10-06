@@ -1,3 +1,5 @@
+
+"use client";
 import { useState, useCallback, useEffect, useRef } from "react";
 import {
   ShoppingCart,
@@ -12,13 +14,17 @@ import {
 import LoginModal from "../ui/login";
 import { useAuth } from "@/contexts/userAuth";
 import { getCartItems } from "@/utils/cardData";
+import { useRouter } from "next/navigation";
 
 const Navbar = () => {
   // ✅ consume context
   const { isLoggedIn, userInfo, logout } = useAuth();
+
+  const carts = getCartItems();
+  console.log("carts",carts.length);
   
 
-  const [cartCount, setCartCount] = useState(0);
+  const [cartCount, setCartCount] = useState();
   const [openLoginModal, setOpenLoginModal] = useState(false);
   const [activeTab, setActiveTab] = useState("home");
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
@@ -26,85 +32,72 @@ const Navbar = () => {
   const mobileUserDropdownRef = useRef(null);
 
   // ✅ Load cart data and calculate count
-  useEffect(() => {
-    const loadCartData = () => {
-      // Only load cart if user is logged in
-      if (!isLoggedIn) {
-        setCartCount(0);
-        return;
-      }
-      const cartItems = getCartItems();
-      
-      if (Array.isArray(cartItems) && cartItems.length > 0) {
-        const totalItems = cartItems.reduce(
-          (sum, item) => sum + (parseInt(item.quantity) || 0),
-          0
-        );
-        setCartCount(totalItems);
-      } else {
-        setCartCount(0);
-      }
-    };
+useEffect(() => {
+  const loadCartData = () => {
+    const cartItems = getCartItems();
+    if (!Array.isArray(cartItems)) {
+      setCartCount(0);
+      return;
+    }
 
-    loadCartData();
+    // Count total quantity or items
+    const totalItems = cartItems.reduce(
+      (sum, item) => sum + (parseInt(item.quantity) || 1),
+      0
+    );
 
-    // Listen for storage changes (cart updates)
-    const handleStorageChange = (e) => {
-      if (e.key === "checkoutState") {
-        loadCartData();
-      }
-    };
+    setCartCount(totalItems);
+  };
 
-    window.addEventListener("storage", handleStorageChange);
-    
-    // Also listen for custom cart update events
-    window.addEventListener("cartUpdated", loadCartData);
-    
-    return () => {
-      window.removeEventListener("storage", handleStorageChange);
-      window.removeEventListener("cartUpdated", loadCartData);
-    };
-  }, [isLoggedIn]);
+  // Initial load
+  loadCartData();
+
+  // Update on storage/cart changes
+  window.addEventListener("storage", loadCartData);
+  window.addEventListener("cartUpdated", loadCartData);
+
+  return () => {
+    window.removeEventListener("storage", loadCartData);
+    window.removeEventListener("cartUpdated", loadCartData);
+  };
+}, [isLoggedIn]);
+
+
+useEffect(() => {
+  if (carts && carts.length) {
+    const totalItems = carts.reduce(
+      (sum, item) => sum + (parseInt(item.quantity) || 1),
+      0
+    );
+    setCartCount(totalItems);
+  } else {
+    setCartCount(0);
+  }
+}, [carts]);
+
+
 
   // ✅ Close dropdowns when clicked outside
-  useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (userDropdownRef.current && !userDropdownRef.current.contains(e.target)) {
-        setUserDropdownOpen(false);
-      }
-      if (mobileUserDropdownRef.current && !mobileUserDropdownRef.current.contains(e.target)) {
-        setUserDropdownOpen(false);
-      }
-    };
+  // useEffect(() => {
+  //   const handleClickOutside = (e) => {
+  //     if (userDropdownRef.current && !userDropdownRef.current.contains(e.target)) {
+  //       setUserDropdownOpen(false);
+  //     }
+  //     if (mobileUserDropdownRef.current && !mobileUserDropdownRef.current.contains(e.target)) {
+  //       setUserDropdownOpen(false);
+  //     }
+  //   };
 
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  //   document.addEventListener("mousedown", handleClickOutside);
+  //   return () => document.removeEventListener("mousedown", handleClickOutside);
+  // }, []);
 
   // ✅ Logout using context
 // ✅ Logout using context
-const handleLogout = useCallback(() => {
-  console.log("handleLogout",isLoggedIn);
+
+console.log("mglewfmglwdfmgwldfmgwledf");
+
   
-  logout();
-  try {
-    // 1. Close dropdown
-    setUserDropdownOpen(false);
-    
-    // 2. Clear cart UI immediately
-    setCartCount(0);
-    
-    // 3. Call context logout
-    
-    // 4. Reload page after small delay
-    setTimeout(() => {
-      window.location.reload();
-    }, 100);
-  } catch (error) {
-    console.error("Logout error:", error);
-    window.location.reload();
-  }
-}, [logout]);
 
   // ✅ Handle navigation
   const handleNavigation = useCallback(
@@ -145,6 +138,24 @@ const handleLogout = useCallback(() => {
   const handleCall = () => {
     window.location.href = "tel:+917065012902";
   };
+
+
+
+const handleLogout = () => {
+  console.log("Logging out user...");
+  logout(); // ✅ Call the context logout
+  setUserDropdownOpen(false); // Close the dropdown
+};
+
+useEffect(() => {
+  // whenever login state changes, reload cart count etc.
+  if (!isLoggedIn) {
+    setCartCount(0);
+  }
+}, [isLoggedIn]);
+
+
+
 
   return (
     <>
@@ -241,12 +252,12 @@ const handleLogout = useCallback(() => {
                     </button>
 
                     <button
-                      onClick={handleLogout}
-                      className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50"
-                    >
-                      <LogOut className="w-4 h-4 mr-3" />
-                      Logout
-                    </button>
+      onClick={handleLogout}
+      className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+    >
+      <LogOut className="w-4 h-4 mr-3" />
+      Logout
+    </button>
                   </div>
                 </div>
               )}
@@ -311,12 +322,12 @@ const handleLogout = useCallback(() => {
                     </button>
 
                     <button
-                      onClick={handleLogout}
-                      className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50"
-                    >
-                      <LogOut className="w-4 h-4 mr-3" />
-                      Logout
-                    </button>
+      onClick={handleLogout}
+      className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+    >
+      <LogOut className="w-4 h-4 mr-3" />
+      Logout
+    </button>
                   </div>
                 </div>
               )}

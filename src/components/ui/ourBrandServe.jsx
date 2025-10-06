@@ -12,9 +12,9 @@ const BrandListSection = () => {
       try {
         const response = await fetch("/api/getBrands");
         if (response.ok) {
-          const data = await response.json();
-          console.log("dataaaaa",data.page_url);
-          
+          const data = await response.json();  
+          console.log("data",data);
+                  
           setBrands(data);
         } else {
           const errData = await response.json().catch(() => ({}));

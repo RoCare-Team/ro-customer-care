@@ -1,7 +1,12 @@
 "use client";
 import { useState } from "react";
+import DOMPurify from "dompurify";
 
-export default function ROServiceContent({ city }) {
+
+export default function ROServiceContent({ pageData }) {
+
+  console.log("pageData-----",pageData);
+  
  
     
   const [showMore, setShowMore] = useState(false);
@@ -9,20 +14,20 @@ export default function ROServiceContent({ city }) {
   // Split content into preview and full
   const previewContent = (
     <>
-      <p className="text-gray-700 leading-relaxed">
+      {/* <p className="text-gray-700 leading-relaxed">
         Looking For RO Service? Click And Register It Now!! 
       </p>
       <p className="text-gray-700 leading-relaxed">
         We can reach everyone's door within 24 hours; consequently, people can connect us
         for quick response at their premises, and we also assure high-rated water purifier repair
         and maintenance services at comparatively low cost...
-      </p>
+      </p> */}
     </>
   );
 
   const fullContent = (
     <>
-      <p className="text-gray-700 leading-relaxed">
+      {/* <p className="text-gray-700 leading-relaxed">
         Our RO service technician is result-oriented and believes in providing quality services
         without failing. They not only propose water purifier servicing but also guide people
         about minor issues in the RO water purifier. Recruiting us as your water purifier technician
@@ -39,7 +44,7 @@ export default function ROServiceContent({ city }) {
         <li>Technician will visit your place.</li>
         <li>Service completed.</li>
         <li>Make payment and share your valuable feedback.</li>
-      </ol>
+      </ol> */}
 
       {/* You can add the rest of your content here (Kent, Pureit, Livpure sections) */}
     </>
@@ -48,8 +53,15 @@ export default function ROServiceContent({ city }) {
   return (
     <section className="p-6 space-y-4">
       <h1 className="text-3xl font-bold text-gray-800">
-        About Our Water Purifier Services {city}
+      {pageData?.page_title}
       </h1>
+
+      <p className="text-justify" dangerouslySetInnerHTML={{
+    __html: pageData &&  DOMPurify?.sanitize(pageData?.content_text || "")
+  }}>
+        
+      </p>
+
 
       {/* Show preview content always */}
       {previewContent}

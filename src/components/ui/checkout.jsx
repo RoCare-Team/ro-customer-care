@@ -7,12 +7,10 @@ import { getCartItems } from "@/utils/cardData";
 
 export default function CheckoutComp() {
   // ---------------- CART ----------------
-  const savedCart = getCartItems() || [];
-  const [cartData, setCartData] = useState(savedCart);
+  const [cartData, setCartData] = useState([]);
+  const [width, setWidth] = useState(0);
+  const [isClient, setIsClient] = useState(false);
 
-
-  console.log("cartData123456",cartData);
-  
   const totalItems = cartData.reduce(
     (acc, cur) => acc + (parseInt(cur.quantity) || 0),
     0
@@ -39,9 +37,6 @@ export default function CheckoutComp() {
     phone: "",
   });
 
-  // Load saved addresses from API
-
-
   // Add new address API
   const handleSubmitAddress = async (e) => {
     e.preventDefault();
@@ -67,7 +62,7 @@ export default function CheckoutComp() {
       const data = await res.json();
       if (data.status === "success" || data.msg?.toLowerCase().includes("success")) {
         toast.success("Address added successfully!", { id: toastId });
-        fetchAddresses();
+        loadRecentAddresses();
         setShowAddressForm(false);
         setFormData({
           name: "",
@@ -129,37 +124,7 @@ export default function CheckoutComp() {
   // ---------------- PAYMENT ----------------
   const [selectedPayment, setSelectedPayment] = useState("cod");
 
-  // ---------------- PLACE ORDER ----------------
-  const handlePlaceOrder = async () => {
-    if (!selectedAddress || !selectedDate || !selectedSlot) {
-      toast.error("Please select address, date & time slot");
-      return;
-    }
-
-    const customerId = localStorage.getItem("customer_id");
-    if (!customerId) {
-      toast.error("Please login first");
-      return;
-    }
-
-    const orderData = {
-      cid: customerId,
-      address_id: selectedAddress,
-      date: selectedDate,
-      slot: selectedSlot,
-      payment: selectedPayment,
-      items: cartData,
-      total: totalAmount,
-    };
-
-    console.log("Placing Order:", orderData);
-
-    toast.success("Order placed successfully!");
-    // 👉 Yaha tum apna place order API call karna
-  };
-
-
-   const loadRecentAddresses = () => {
+  const loadRecentAddresses = () => {
     try {
       const stored = localStorage.getItem('RecentAddress');
       const parsed = stored ? JSON.parse(stored) : [];
@@ -174,34 +139,24 @@ export default function CheckoutComp() {
     const cust_id = localStorage.getItem("customer_id");
     const cust_mobile = localStorage.getItem("userPhone");
     const address_id = "11043";
-    // const cust_email = localStorage.getItem("email" || "userEmail");
     const cust_email = localStorage.getItem("email") || localStorage.getItem("userEmail");
 
     const chkout = JSON.parse(localStorage.getItem("checkoutState") || "[]");
     const cartItems = JSON.parse(localStorage.getItem("cartItems") || "[]");
     const cart_id = chkout[0]?.category_cart_id;
 
-    const timeSlotData = localStorage.getItem("bookingTimeSlot");
-    const time = timeSlotData ? JSON.parse(timeSlotData) : {};
     const appointment_time = selectedSlot;
     const appointment_date = selectedDate;
 
     const source = 'Testing RoServiceCare';
 
-    console.log("chkout[0].category_cart_id",);
-    
-
-    // console.log(cust_id,cust_mobile,address_id,cust_email,appointment_date,appointment_time);
-
-    
-    // Validate all required fields
     if (!cust_id || !cust_mobile || !address_id || !cust_email || !appointment_date || !appointment_time) {
       toast.error("Please complete all booking details before proceeding to payment", {
         autoClose: 3000,
       });
       return;
     }
-    
+
     const payload = {
       cust_id,
       cust_mobile,
@@ -212,7 +167,6 @@ export default function CheckoutComp() {
       appointment_date,
       source
     };
-    console.log(payload+'fasdfasd');
 
     try {
       const res = await fetch("https://waterpurifierservicecenter.in/customer/ro_customer/add_lead_with_full_dtls.php", {
@@ -224,8 +178,6 @@ export default function CheckoutComp() {
       const data = await res.json();
 
       if (data.error == false) {
-        // toast.success(data.msg);
-
         const leftOverItems = chkout.filter(items => items.category_cart_id !== cart_id);
 
         if (leftOverItems.length > 0) {
@@ -250,7 +202,6 @@ export default function CheckoutComp() {
           localStorage.setItem('cartItems', JSON.stringify([]));
         }
 
-        // Clear booking data
         const itemsToRemove = [
           "bookingTimeSlot",
           "bookingAddress",
@@ -262,23 +213,13 @@ export default function CheckoutComp() {
           localStorage.removeItem(item);
         });
 
-        // Reset booking state
-        
-
-
-        // console.log(JSON.stringify(data) + "the data of the all leads generated");
         if (redirect) {
           setTimeout(() => {
             window.location.href = data.lead_id_for_payment;
           }, 100);
         } else {
-          // toast.success("", { autoClose: 3000 });
-          // cons.log("Thank You!.....");
           toast.success("Thank You!....");
         }
-        // setTimeout(() => {
-        //     window.location.href = data.lead_id_for_payment;
-        // }, 100);
       } else {
         toast.error(data.msg || "Payment processing failed");
       }
@@ -286,16 +227,25 @@ export default function CheckoutComp() {
       toast.error("Network error. Please try again.");
       console.error("Payment error:", error);
     }
-};
+  };
 
-  useEffect(()=>{
-    loadRecentAddresses()
-  },[])
+  // Load all client-side data after component mounts
+  useEffect(() => {
+    setIsClient(true);
+    const savedCart = getCartItems() || [];
+    setCartData(savedCart);
+    loadRecentAddresses();
+    setWidth(window.innerWidth);
+  }, []);
 
-
-  
-
-
+  // Show loading state during SSR
+  if (!isClient) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex justify-center items-center p-4">
+        <div className="text-gray-500">Loading...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 flex justify-center p-4">
@@ -303,25 +253,25 @@ export default function CheckoutComp() {
         {/* LEFT: CART SUMMARY */}
         <div className="bg-gray-100 p-6">
           <h2 className="text-xl font-bold mb-4">Order Summary</h2>
-         
- {cartData && cartData.length > 0 ? (
-    cartData.map((item, idx) => {
-      const quantity = parseInt(item.quantity, 10) || 0;
-      const total = parseFloat(item.total_main) || 0;
 
-      return (
-        <div key={idx} className="flex items-center justify-between border-b pb-3">
-          <div>
-            <p className="font-semibold">{item.service_name}</p>
-            <p className="text-sm text-gray-600">Quantity: {quantity}</p>
-          </div>
-          <div>₹{total}</div>
-        </div>
-      )
-    })
-  ) : (
-    <p className="text-gray-500">Your cart is empty.</p>
-  )}
+          {cartData && cartData.length > 0 ? (
+            cartData.map((item, idx) => {
+              const quantity = parseInt(item.quantity, 10) || 0;
+              const total = parseFloat(item.total_price) || 0;
+
+              return (
+                <div key={idx} className="flex items-center justify-between border-b pb-3">
+                  <div>
+                    <p className="font-semibold">{item.service_name}</p>
+                    <p className="text-sm text-gray-600">Quantity: {quantity}</p>
+                  </div>
+                  <div>₹{total}</div>
+                </div>
+              )
+            })
+          ) : (
+            <p className="text-gray-500">Your cart is empty.</p>
+          )}
           <div className="flex justify-between text-lg font-bold mt-3">
             <span>Total</span>
             <span>₹{totalAmount}</span>
@@ -338,11 +288,10 @@ export default function CheckoutComp() {
             {recentAddress.map((addr) => (
               <label
                 key={addr.id}
-                className={`flex flex-col p-3 border rounded-xl mb-2 cursor-pointer ${
-                  selectedAddress === addr.id
-                    ? "border-blue-600 bg-blue-50"
-                    : "border-gray-300 hover:border-blue-300"
-                }`}
+                className={`flex flex-col p-3 border rounded-xl mb-2 cursor-pointer ${selectedAddress === addr.id
+                  ? "border-blue-600 bg-blue-50"
+                  : "border-gray-300 hover:border-blue-300"
+                  }`}
               >
                 <input
                   type="radio"
@@ -430,28 +379,26 @@ export default function CheckoutComp() {
           </div>
 
           {/* Payment */}
-          <div className="space-y-3">
+          {/* <div className="space-y-3">
             <button
               onClick={() => setSelectedPayment("card")}
-              className={`flex items-center p-3 border rounded-xl w-full ${
-                selectedPayment === "card"
+              className={`flex items-center p-3 border rounded-xl w-full ${selectedPayment === "card"
                   ? "border-blue-600 bg-blue-50"
                   : "border-gray-300"
-              }`}
+                }`}
             >
               <CreditCard className="w-5 h-5 mr-3 text-blue-600" /> Card Payment
             </button>
             <button
               onClick={() => setSelectedPayment("cod")}
-              className={`flex items-center p-3 border rounded-xl w-full ${
-                selectedPayment === "cod"
+              className={`flex items-center p-3 border rounded-xl w-full ${selectedPayment === "cod"
                   ? "border-blue-600 bg-blue-50"
                   : "border-gray-300"
-              }`}
+                }`}
             >
               <Truck className="w-5 h-5 mr-3 text-blue-600" /> Cash on Delivery
             </button>
-          </div>
+          </div> */}
 
           {/* Place Order */}
           <button
@@ -463,7 +410,7 @@ export default function CheckoutComp() {
           >
             Place Order
           </button>
-        </div>
+        </div>:
       </div>
     </div>
   );

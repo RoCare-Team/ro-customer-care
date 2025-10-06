@@ -46,21 +46,13 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   // Logout user and clear localStorage
-const logout = useCallback(() => {
-  // Clear ALL localStorage items
-  localStorage.removeItem("userInfo");
-  localStorage.removeItem("authToken");
-  localStorage.removeItem("checkoutState");
-  
-  // Update state
-  setIsLoggedIn(false);
+const logout = () => {
+  localStorage.removeItem("customer_id");
+  localStorage.removeItem("token"); // or any other key
+  localStorage.clear()
   setUserInfo(null);
-  
-  // Dispatch event
-  window.dispatchEvent(new CustomEvent('authStateChanged', { 
-    detail: { isLoggedIn: false } 
-  }));
-}, []);
+  setIsLoggedIn(false);
+};
 
   // Check on mount + listen for storage changes
   useEffect(() => {
