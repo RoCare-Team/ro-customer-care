@@ -3,29 +3,46 @@
 import { Facebook, Twitter, Linkedin, Instagram } from "lucide-react";
 
 const Footer = () => {
+  // Top 5 Kent Customer Care cities
+  const kentCities = ["delhi", "mumbai", "gurgaon", "bangalore", "chennai"];
+  const roCities = ["delhi", "mumbai", "gurgaon", "bangalore", "chennai"];
+
+
   return (
     <footer className="bg-[#2d1457] text-white pt-8">
       {/* Top Section */}
       <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-6 pb-6">
-        {/* Useful Links */}
+        {/* RO Customer Care */}
         <div>
-          <h2 className="font-bold text-lg mb-3">Useful Links</h2>
-          <ul className="space-y-1 text-sm">
-            <li><a href="#" className="hover:underline">RO Maintenance</a></li>
-            <li><a href="#" className="hover:underline">AMC Plans</a></li>
-            <li><a href="#" className="hover:underline">Repair Service</a></li>
-            <li><a href="#" className="hover:underline">Customer Care</a></li>
-          </ul>
+          <h2 className="font-bold text-lg mb-3">RO Customer Care</h2>
+<ul className="space-y-1 text-sm">
+  {roCities.map(city => (
+    <li key={city}>
+      <a
+        href={`/ro-service-${city}`}
+        className="hover:underline capitalize"
+      >
+        {city} RO Service
+      </a>
+    </li>
+  ))}
+</ul>
         </div>
 
-        {/* Services / Resources */}
+        {/* Kent Customer Care Cities */}
         <div>
-          <h2 className="font-bold text-lg mb-3">Customer Care Services</h2>
+          <h2 className="font-bold text-lg mb-3">Kent Customer Care Cities</h2>
           <ul className="space-y-1 text-sm">
-            <li><a href="#" className="hover:underline">Book a Service</a></li>
-            <li><a href="#" className="hover:underline">Check Service Status</a></li>
-            <li><a href="#" className="hover:underline">Request AMC</a></li>
-            <li><a href="#" className="hover:underline">FAQs</a></li>
+            {kentCities.map(city => (
+              <li key={city}>
+                <a
+                  href={`/kent-customer-care-${city}`}
+                  className="hover:underline capitalize"
+                >
+                  {city} RO Service
+                </a>
+              </li>
+            ))}
           </ul>
         </div>
 

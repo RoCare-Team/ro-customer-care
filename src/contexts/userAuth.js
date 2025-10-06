@@ -16,7 +16,7 @@ export const AuthProvider = ({ children }) => {
       const userPhone = localStorage.getItem("userPhone");
       const userName = localStorage.getItem("userName");
       const userEmail = localStorage.getItem("userEmail");
-      const customerId = localStorage.getItem("customer_id"); // ✅ FIXED
+      const customerId = localStorage.getItem("customer_id");
 
       const loggedIn = !!userToken;
       setIsLoggedIn(loggedIn);
@@ -46,13 +46,19 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   // Logout user and clear localStorage
-const logout = () => {
-  localStorage.removeItem("customer_id");
-  localStorage.removeItem("token"); // or any other key
-  localStorage.clear()
-  setUserInfo(null);
-  setIsLoggedIn(false);
-};
+  const logout = useCallback(() => {
+    try {
+      localStorage.removeItem("customer_id");
+      localStorage.removeItem("userToken");
+      localStorage.removeItem("userPhone");
+      localStorage.removeItem("userName");
+      localStorage.removeItem("userEmail");
+      setUserInfo(null);
+      setIsLoggedIn(false);
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
+  }, []);
 
   // Check on mount + listen for storage changes
   useEffect(() => {

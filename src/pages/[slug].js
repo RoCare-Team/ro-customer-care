@@ -12,8 +12,9 @@ import RoServiceCare from "../../public/images/ro-care-service.png"
 import { useAuth } from "@/contexts/userAuth";
 import Link from "next/link";
 import FaqSectionRO from "@/components/ui/customerReview";
-import CheckoutPage from "./checkout";
 import OurBrandSection from "@/components/ui/ourBrandServe";
+import { parseCustomerCareSlug } from "@/utils/customerCareValidPage";
+import CustomerCarePage from "@/components/ui/customer-care";
 
 // Service categories mapping with "All" option
 const serviceCategories = [
@@ -39,6 +40,11 @@ export default function ROServicePage() {
   const [city, setCity] = useState("");
   const [invalid, setInvalid] = useState(false);
   const { isLoggedIn, handleLoginSuccess } = useAuth();
+
+    const { brand, isCustomerCare } = parseCustomerCareSlug(slug);
+
+    console.log("isCustomerCare",isCustomerCare);
+    
 
     const [pageData, setPageData] = useState(null);
 
@@ -100,7 +106,13 @@ export default function ROServicePage() {
 
   // console.log("Brand:", brand);       // Kent
   // console.log("Category:", category); // Customer Care
-  // console.log("City:", citys);         // Delhi
+  // console.log("City:", citys);         // Delhi44
+
+
+  console.log("slugggggggggggggggg",slug);
+
+  
+  
 
 
   // Load cart data from localStorage
@@ -230,6 +242,41 @@ export default function ROServicePage() {
   }, [fetchServices]);
 
   // string ke har word ka first letter capital
+
+  // Memoized function to fetch page data
+const getPageData = useCallback(async (pageUrl) => {
+  const url = pageUrl || (Array.isArray(slug) ? slug[0] : slug);
+  if (!url) return null;
+
+  try {
+    const response = await fetch(`/api/getPage?page_url=${encodeURIComponent(url)}`);
+    if (!response.ok) {
+      console.error("Failed to fetch page data:", response.status);
+      return null;
+    }
+
+    const data = await response.json();
+    console.log("Page data fetched:", data);
+    setPageData(data)
+    return data;
+  } catch (error) {
+    console.error("Error fetching page data:", error);
+    return null;
+  }
+}, [slug]);
+
+// ✅ Always call useEffect; handle slug check inside
+// ✅ Always call useEffect; handle slug check inside
+useEffect(() => {
+  const fetchData = async () => {
+    const data = await getPageData();
+    setPageData(data);
+  };
+
+  fetchData();
+}, [slug, getPageData]);
+
+console.log("pageData", pageData);
 
 
   function safeCapitalize(str) {
@@ -474,9 +521,10 @@ export default function ROServicePage() {
         </div>
         <h1 className="text-3xl font-bold text-gray-800">404 - City Not Found</h1>
         <p className="mt-3 text-gray-600 text-lg max-w-md text-center">
-          Oops! The city you are looking for doesn't exist in our service area.
-          Please check the link or go back.
-        </p>
+  Oops! The city you are looking for doesn&apos;t exist in our service area.
+  Please check the link or go back.
+</p>
+
         <button
           onClick={() => window.history.back()}
           className="mt-6 px-6 py-3 bg-blue-600 text-white font-medium rounded-lg shadow-md hover:bg-blue-700 transition"
@@ -488,39 +536,9 @@ export default function ROServicePage() {
   }
 
 
-const getPageData = useCallback(async (pageUrl) => {
-    try {
-      const url = pageUrl || (Array.isArray(slug) ? slug[0] : slug);
-      if (!url) return null;
-
-      const response = await fetch(`/api/getPage?page_url=${encodeURIComponent(url)}`);
-      if (response.ok) {
-        const data = await response.json();
-        console.log("Page data fetched:", data);
-        return data;
-      } else {
-        console.error("Failed to fetch page data:", response.status);
-        return null;
-      }
-    } catch (error) {
-      console.error("Error fetching page data:", error);
-      return null;
-    }
-  }, [slug]);
-
-  useEffect(() => {
-    if (!slug) return;
-
-    const fetchData = async () => {
-      const data = await getPageData();
-      setPageData(data);
-    };
-
-    fetchData();
-  }, [slug, getPageData]);
 
 
-  console.log("pageData",pageData);
+
   
 
 
@@ -534,7 +552,8 @@ const getPageData = useCallback(async (pageUrl) => {
       <Navbar />
       <div className="min-h-screen bg-gray-50 mt-0 md:mt-16">
         <div className="max-w-7xl mx-auto p-6">
-          <div className="grid lg:grid-cols-12 gap-6">
+          {!isCustomerCare ? (
+            <div className="grid lg:grid-cols-12 gap-6">
             {/* Left Sidebar - Service Categories - STICKY */}
             <div className="lg:col-span-2">
               <div className="sticky top-20 bg-white rounded-lg p-4 shadow-sm">
@@ -683,10 +702,12 @@ const getPageData = useCallback(async (pageUrl) => {
                             <div className="w-28 sm:w-40 flex flex-col items-center gap-2">
                               <div className="w-20 h-16 sm:w-28 sm:h-20 bg-gradient-to-br from-blue-100 to-blue-200 rounded-lg flex items-center justify-center overflow-hidden">
                                 {service.image && service.image !== "/api/placeholder/150/120" ? (
-                                  <img
+                                  <Image
                                     src={service.image}
                                     alt={service.service_name}
                                     className="w-full h-full object-cover"
+                                    width={112}
+                                    height={80}
                                   />
                                 ) : (
                                   <Wrench className="h-6 w-6 sm:h-8 sm:w-8 text-blue-600" />
@@ -852,6 +873,7 @@ const getPageData = useCallback(async (pageUrl) => {
               </div>
             </div>
           </div>
+          ) : <CustomerCarePage/>}
           <AwardCertifications />
           <ROServiceContent pageData={pageData} />
 

@@ -1,5 +1,7 @@
 // pura checkoutState return karega
 export const getCartData = () => {
+  if (typeof window === "undefined") return []; // ✅ SSR safety
+
   try {
     const cartData = localStorage.getItem("checkoutState");
     if (!cartData) return [];
@@ -7,7 +9,7 @@ export const getCartData = () => {
     // Check if it's valid JSON
     if (cartData === "[object Object]") {
       console.warn("Invalid checkoutState in localStorage, resetting...");
-      localStorage.removeItem("checkoutState"); // optional: clear invalid value
+      localStorage.removeItem("checkoutState"); // optional
       return [];
     }
 
@@ -17,6 +19,7 @@ export const getCartData = () => {
     return [];
   }
 };
+
 
 // sirf services list flatten karke return karega
 export const getCartItems = () => {
