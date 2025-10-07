@@ -5,7 +5,7 @@ const BrandListSection = () => {
   const [brands, setBrands] = useState([]);
   const [visibleCount, setVisibleCount] = useState(5); // top 5 initially
   const [loading, setLoading] = useState(true);
-  const [selectedBrands, setSelectedBrands] = useState([]);
+  const [selectedBrands, setSeletedBrands] = useState([]);
 
   useEffect(() => {
     async function fetchAllBrands() {
@@ -42,9 +42,8 @@ const BrandListSection = () => {
 
 
   const handlerBrands = () => {
-    console.log("brand clicked");
-
-
+    console.log("SElected");
+    
   }
 
   const handleViewMore = () => setVisibleCount(sortedBrands.length);
