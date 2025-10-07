@@ -10,7 +10,7 @@ export default function FloatingChatButtons() {
     <div className="fixed bottom-20 right-5 flex flex-col items-end gap-4 z-50">
       {/* WhatsApp Button */}
       <a
-        href="https://wa.me/919876543210" // change to your WhatsApp number
+        href="https://wa.me/919311587744" // change to your WhatsApp number
         target="_blank"
         rel="noopener noreferrer"
         onMouseEnter={() => setHoverWhatsApp(true)}

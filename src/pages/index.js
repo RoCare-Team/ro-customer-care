@@ -7,6 +7,9 @@ import ClientReviews from "@/components/ui/clientReview";
 import Milestones from "@/components/ui/ourMilestone";
 import BrandsWeRepair from "@/components/ui/brandsWithWe";
 import BookService from "../components/ui/book-ro-service"
+import WaterPurifierServicePage from "@/components/ui/homePageContent";
+import BrandListSection from "@/components/ui/ourBrandServe";
+import FaqSectionRO from "@/components/ui/customerReview";
 
 
 export default function Home() {
@@ -17,7 +20,10 @@ export default function Home() {
      <BookService/>
      <ClientReviews/>
      <Milestones/>
-     <BrandsWeRepair/>
+     {/* <BrandsWeRepair/> */}
+     <WaterPurifierServicePage/>
+     <FaqSectionRO/>
+     <BrandListSection/>
     <Footer/>
     </>
   );

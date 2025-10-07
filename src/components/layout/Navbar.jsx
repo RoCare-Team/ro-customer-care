@@ -10,6 +10,7 @@ import {
   ChevronDown,
   LogOut,
   Settings,
+  PhoneCall
 } from "lucide-react";
 import LoginModal from "../ui/login";
 import { useAuth } from "@/contexts/userAuth";
@@ -174,6 +175,12 @@ useEffect(() => {
               </span>
             </a>
           </div>
+
+ <div className="inline-flex  gap-2 bg-blue-600 rounded-full text-white px-4 py-2 font-bold shadow-lg animate-blink hover:scale-110 transition-all duration-300 cursor-pointer">
+      <PhoneCall className="w-5 h-5 text-white" />
+      7740847114
+    </div>
+
 
           
 

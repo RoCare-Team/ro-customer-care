@@ -4,11 +4,12 @@ import { useEffect, useState } from "react";
 import { Wrench, Users, CalendarCheck, MapPin } from "lucide-react";
 
 const milestones = [
-  { id: 1, label: "Total Services Done", value: 12000, icon: Wrench },
-  { id: 2, label: "Happy Clients", value: 8500, icon: Users },
-  { id: 3, label: "Years of Experience", value: 12, icon: CalendarCheck },
-  { id: 4, label: "Cities Served", value: 50, icon: MapPin },
+  { id: 1, label: "Happy Customer", value: 2500000, icon: Wrench }, // 25 lakh = 2,500,000
+  { id: 2, label: "Partner", value: 8500, icon: Users },
+  { id: 3, label: "Years of Experience", value: 17, icon: CalendarCheck },
+  { id: 4, label: "Cities Served", value: 1400, icon: MapPin },
 ];
+
 
 export default function Milestones() {
   const [counts, setCounts] = useState(milestones.map(() => 0));

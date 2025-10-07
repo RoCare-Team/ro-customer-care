@@ -857,13 +857,16 @@ const loadRecentAddresses = () => {
         }}
       />
 
+     
       <section className="py-6 md:py-16 px-3 md:px-4 bg-gradient-to-br from-gray-50 via-white to-blue-50 overflow-hidden">
+        
+
         <div className="max-w-7xl mx-auto">
           {/* Section Header */}
           <div className="flex justify-between items-center mb-2">
-            <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
+            <p className="text-xl sm:text-2xl font-bold text-gray-900">
               <span className="text-blue-600">RO</span> Services
-            </h1>
+            </p>
             <a
               href="/ro-services"
               className="text-blue-600 text-xs sm:text-sm font-medium hover:underline transition-colors"

@@ -5,7 +5,7 @@ import { FaWhatsapp } from "react-icons/fa6";
 export default function FloatingWhatsAppButton() {
   return (
     <a
-      href="https://wa.me/919876543210" // Replace with your WhatsApp number
+      href="https://wa.me/919311587744" // Replace with your WhatsApp number
       target="_blank"
       rel="noopener noreferrer"
       className="

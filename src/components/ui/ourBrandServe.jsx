@@ -12,9 +12,9 @@ const BrandListSection = () => {
       try {
         const response = await fetch("/api/getBrands");
         if (response.ok) {
-          const data = await response.json();  
-          console.log("data",data);
-                  
+          const data = await response.json();
+          console.log("data", data);
+
           setBrands(data);
         } else {
           const errData = await response.json().catch(() => ({}));
@@ -31,7 +31,7 @@ const BrandListSection = () => {
   }, []);
 
   const preferredBrands = ["Kent", "aqua", "Doctor-Fresh"];
-  
+
   // Sort brands: preferred first, then others
   const sortedBrands = [
     ...preferredBrands.map((b) =>
@@ -41,11 +41,11 @@ const BrandListSection = () => {
   ];
 
 
-  const handlerBrands = () =>{
+  const handlerBrands = () => {
     console.log("brand clicked");
-    
 
-  } 
+
+  }
 
   const handleViewMore = () => setVisibleCount(sortedBrands.length);
   const handleViewLess = () => setVisibleCount(5);

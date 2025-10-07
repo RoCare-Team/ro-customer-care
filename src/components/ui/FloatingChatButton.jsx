@@ -58,7 +58,7 @@ export default function FloatingChatButton() {
       {isOpen && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-end justify-end">
           <div className="bg-white w-full md:w-96 h-[500px] rounded-tl-xl rounded-bl-xl shadow-xl p-4 flex flex-col">
-            
+
             {/* Header */}
             <div className="flex justify-between items-center mb-2">
               <h2 className="font-bold text-lg">Chat Support</h2>
@@ -75,11 +75,10 @@ export default function FloatingChatButton() {
               {messages.map((msg, idx) => (
                 <div
                   key={idx}
-                  className={`p-2 rounded-lg text-sm max-w-[80%] ${
-                    msg.sender === "user"
+                  className={`p-2 rounded-lg text-sm max-w-[80%] ${msg.sender === "user"
                       ? "bg-blue-100 text-gray-900 self-end"
                       : "bg-gray-100 text-gray-900 self-start"
-                  }`}
+                    }`}
                 >
                   {msg.text}
 
@@ -99,7 +98,7 @@ export default function FloatingChatButton() {
                   )}
                 </div>
               ))}
-              {loading && <p className="text-gray-500 text-sm">AI is typing...</p>}
+              {loading && <p className="text-gray-500 text-sm">typing...</p>}
             </div>
 
             {/* Input box */}
