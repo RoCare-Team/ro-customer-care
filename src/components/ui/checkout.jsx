@@ -37,19 +37,28 @@ export default function CheckoutComp() {
     phone: "",
   });
 
-  // Add new address API
+
+  console.log("selectedAddress", selectedAddress);
+
+
   const handleSubmitAddress = async (e) => {
     e.preventDefault();
+
     const customerId = localStorage.getItem("customer_id");
     if (!customerId) {
       toast.error("Please login first");
+      setOpenLoginModal(true);
       return;
     }
 
-    const payload = { ...formData, cid: customerId };
+    const submitToast = toast.loading("Saving address...");
 
-    const toastId = toast.loading("Saving address...");
     try {
+      const payload = {
+        ...formData,
+        cid: customerId
+      };
+
       const res = await fetch(
         "https://waterpurifierservicecenter.in/customer/ro_customer/add_address.php",
         {
@@ -60,27 +69,49 @@ export default function CheckoutComp() {
       );
 
       const data = await res.json();
+
       if (data.status === "success" || data.msg?.toLowerCase().includes("success")) {
-        toast.success("Address added successfully!", { id: toastId });
+        const addressObj = {
+          id: data.address_id || Date.now().toString(),
+          flat_no: formData.houseNo,
+          landmark: formData.landmark,
+          area: formData.street,
+          state: formData.state,
+          city: formData.city,
+          pincode: formData.pincode,
+          type: formData.home_office || 'home',
+          address: `${formData.houseNo}, ${formData.street}, ${formData.city}`
+        };
+
+        const existing = JSON.parse(localStorage.getItem("RecentAddress") || "[]");
+        const isDuplicate = existing.some(
+          (addr) =>
+            addr.flat_no === addressObj.flat_no &&
+            addr.landmark === addressObj.landmark &&
+            addr.area === addressObj.area &&
+            addr.city === addressObj.city
+        );
+
+        const updated = isDuplicate ? existing : [addressObj, ...existing].slice(0, 10);
+        localStorage.setItem("RecentAddress", JSON.stringify(updated));
+
         loadRecentAddresses();
+        setSelectedAddress(addressObj);
         setShowAddressForm(false);
+
         setFormData({
-          name: "",
-          houseNo: "",
-          street: "",
-          landmark: "",
-          city: "",
-          state: "",
-          pincode: "",
-          home_office: "home",
-          phone: "",
+          street: '', landmark: '', houseNo: '', pincode: '', state: '', city: '',
+          full_address: '', phone: '', alt_address_mob: '', phoneNumber: '',
+          home_office: 'home', name: '',
         });
+
+        toast.success(data.msg || "Address saved successfully!", { id: submitToast });
       } else {
-        toast.error(data.msg || "Failed to save address", { id: toastId });
+        toast.error(data.msg || "Failed to save address", { id: submitToast });
       }
-    } catch (err) {
-      console.error("Error saving address", err);
-      toast.error("Something went wrong!", { id: toastId });
+    } catch (error) {
+      console.error("Error saving address:", error);
+      toast.error("Failed to save address. Please try again.", { id: submitToast });
     }
   };
 
@@ -138,7 +169,7 @@ export default function CheckoutComp() {
   const handlePaymentCompleted = async (leadtype, redirect = true) => {
     const cust_id = localStorage.getItem("customer_id");
     const cust_mobile = localStorage.getItem("userPhone");
-    const address_id = "11043";
+    const address_id = selectedAddress;
     const cust_email = localStorage.getItem("email") || localStorage.getItem("userEmail");
 
     const chkout = JSON.parse(localStorage.getItem("checkoutState") || "[]");
@@ -255,9 +286,9 @@ export default function CheckoutComp() {
           <h2 className="text-xl font-bold mb-4">Order Summary</h2>
 
           {cartData && cartData.length > 0 ? (
-            cartData.map((item, idx) => {
+            cartData?.map((item, idx) => {
               const quantity = parseInt(item.quantity, 10) || 0;
-              const total = parseFloat(item.total_price) || 0;
+              const total = parseFloat(item.price) || 0;
 
               return (
                 <div key={idx} className="flex items-center justify-between border-b pb-3">
@@ -285,26 +316,21 @@ export default function CheckoutComp() {
             <h3 className="text-lg font-semibold flex items-center mb-2">
               <MapPin className="w-5 h-5 mr-2 text-blue-600" /> Select Address
             </h3>
-            {recentAddress.map((addr) => (
-              <label
-                key={addr.id}
-                className={`flex flex-col p-3 border rounded-xl mb-2 cursor-pointer ${selectedAddress === addr.id
-                  ? "border-blue-600 bg-blue-50"
-                  : "border-gray-300 hover:border-blue-300"
-                  }`}
-              >
-                <input
-                  type="radio"
-                  checked={selectedAddress === addr.id}
-                  onChange={() => setSelectedAddress(addr.id)}
-                  className="mb-1"
-                />
-                <span className="font-semibold">{addr.name}</span>
-                <span className="text-sm text-gray-600">
-                  {addr.address}, {addr.city}, {addr.state} - {addr.pincode}
-                </span>
-              </label>
-            ))}
+
+            <select
+              value={selectedAddress || ""}
+              onChange={(e) => setSelectedAddress(e.target.value)}
+              className="w-full p-2 border rounded-xl mb-3"
+            >
+              <option value="" disabled>
+                -- Select an Address --
+              </option>
+              {recentAddress.map((addr) => (
+                <option key={addr.id} value={addr.id}>
+                  {addr.name} - {addr.address}, {addr.city}, {addr.state} - {addr.pincode}
+                </option>
+              ))}
+            </select>
 
             {!showAddressForm && (
               <button

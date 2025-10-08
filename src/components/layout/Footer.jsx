@@ -10,6 +10,9 @@ const Footer = () => {
     { name: "Kent Customer Care", path: "/kent-customer-care" },
     { name: "Pureit Customer Care", path: "/pureit-customer-care" },
     { name: "Livpure Customer Care", path: "/livpure-customer-care" },
+    { name: "Hindware Customer Care", path: "/hindware-customer-care" },
+    { name: "HI TECH Customer Care", path: "/hi-tech-customer-care"},
+    { name: "Haier Customer Care", path: "/haier-customer-care"},
   ];
 
   const roCities = ["delhi", "mumbai", "gurgaon", "bangalore", "chennai"];
@@ -52,7 +55,6 @@ const Footer = () => {
                 </li>
               ))}
             </ul>
-
           </div>
 
           {/* Contact & Social */}

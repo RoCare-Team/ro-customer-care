@@ -28,6 +28,8 @@ import {
   FiMaximize2,
   FiLoader
 } from "react-icons/fi";
+import Navbar from "@/components/layout/Navbar";
+import Footer from "@/components/layout/Footer";
 
 function Booking() {
   const [activeTab, setActiveTab] = useState("Active");
@@ -427,7 +429,10 @@ const handleCancelBooking = async () => {
         <meta name="description" content="View your active, completed, and cancelled service bookings." />
       </Head>
 
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-blue-50 via-sky-50 to-slate-50 p-4">
+  <Navbar/>
+      
+
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-blue-50 via-sky-50 to-slate-50 p-4 mt-4">
         <div className="w-full max-w-7xl">
           {/* Breadcrumb */}
           <div className="flex items-center text-left mb-6 px-2">
@@ -869,6 +874,7 @@ const handleCancelBooking = async () => {
           </div>
         </div>
       )}
+      <Footer/>
     </>
   );
 }

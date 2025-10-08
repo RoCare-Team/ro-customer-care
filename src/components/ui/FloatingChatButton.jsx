@@ -57,7 +57,7 @@ export default function FloatingChatButton() {
       {/* Chat Modal */}
       {isOpen && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-end justify-end">
-          <div className="bg-white w-full md:w-96 h-[500px] rounded-tl-xl rounded-bl-xl shadow-xl p-4 flex flex-col">
+          <div className="bg-white w-full md:w-96 h-[500px] rounded-tl-2xl rounded-bl-xl rounded shadow-xl p-4 flex flex-col m-8">
 
             {/* Header */}
             <div className="flex justify-between items-center mb-2">

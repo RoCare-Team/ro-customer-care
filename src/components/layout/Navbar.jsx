@@ -23,8 +23,7 @@ const Navbar = () => {
   const { isLoggedIn, userInfo, logout } = useAuth();
 
   const carts = getCartItems();
-  console.log("carts",carts.length);
-  
+
 
   const [cartCount, setCartCount] = useState();
   const [openLoginModal, setOpenLoginModal] = useState(false);
@@ -34,48 +33,48 @@ const Navbar = () => {
   const mobileUserDropdownRef = useRef(null);
 
   // ✅ Load cart data and calculate count
-useEffect(() => {
-  const loadCartData = () => {
-    const cartItems = getCartItems();
-    if (!Array.isArray(cartItems)) {
+  useEffect(() => {
+    const loadCartData = () => {
+      const cartItems = getCartItems();
+      if (!Array.isArray(cartItems)) {
+        setCartCount(0);
+        return;
+      }
+
+      // Count total quantity or items
+      const totalItems = cartItems.reduce(
+        (sum, item) => sum + (parseInt(item.quantity) || 1),
+        0
+      );
+
+      setCartCount(totalItems);
+    };
+
+    // Initial load
+    loadCartData();
+
+    // Update on storage/cart changes
+    window.addEventListener("storage", loadCartData);
+    window.addEventListener("cartUpdated", loadCartData);
+
+    return () => {
+      window.removeEventListener("storage", loadCartData);
+      window.removeEventListener("cartUpdated", loadCartData);
+    };
+  }, [isLoggedIn]);
+
+
+  useEffect(() => {
+    if (carts && carts.length) {
+      const totalItems = carts.reduce(
+        (sum, item) => sum + (parseInt(item.quantity) || 1),
+        0
+      );
+      setCartCount(totalItems);
+    } else {
       setCartCount(0);
-      return;
     }
-
-    // Count total quantity or items
-    const totalItems = cartItems.reduce(
-      (sum, item) => sum + (parseInt(item.quantity) || 1),
-      0
-    );
-
-    setCartCount(totalItems);
-  };
-
-  // Initial load
-  loadCartData();
-
-  // Update on storage/cart changes
-  window.addEventListener("storage", loadCartData);
-  window.addEventListener("cartUpdated", loadCartData);
-
-  return () => {
-    window.removeEventListener("storage", loadCartData);
-    window.removeEventListener("cartUpdated", loadCartData);
-  };
-}, [isLoggedIn]);
-
-
-useEffect(() => {
-  if (carts && carts.length) {
-    const totalItems = carts.reduce(
-      (sum, item) => sum + (parseInt(item.quantity) || 1),
-      0
-    );
-    setCartCount(totalItems);
-  } else {
-    setCartCount(0);
-  }
-}, [carts]);
+  }, [carts]);
 
 
 
@@ -95,11 +94,10 @@ useEffect(() => {
   // }, []);
 
   // ✅ Logout using context
-// ✅ Logout using context
+  // ✅ Logout using context
 
-console.log("mglewfmglwdfmgwldfmgwledf");
 
-  
+
 
   // ✅ Handle navigation
   const handleNavigation = useCallback(
@@ -142,19 +140,18 @@ console.log("mglewfmglwdfmgwldfmgwledf");
   };
 
 
+  const handleLogout = () => {
+    console.log("Logging out user...");
+    logout(); // ✅ Call the context logout
+    setUserDropdownOpen(false); // Close the dropdown
+  };
 
-const handleLogout = () => {
-  console.log("Logging out user...");
-  logout(); // ✅ Call the context logout
-  setUserDropdownOpen(false); // Close the dropdown
-};
-
-useEffect(() => {
-  // whenever login state changes, reload cart count etc.
-  if (!isLoggedIn) {
-    setCartCount(0);
-  }
-}, [isLoggedIn]);
+  useEffect(() => {
+    // whenever login state changes, reload cart count etc.
+    if (!isLoggedIn) {
+      setCartCount(0);
+    }
+  }, [isLoggedIn]);
 
 
 
@@ -178,14 +175,14 @@ useEffect(() => {
 
 
 
-          
+
 
           {/* Right Side Actions */}
           <div className="flex items-center space-x-2 md:space-x-4">
             <div className="hidden md:inline-flex gap-2 bg-blue-600 rounded-full text-white px-4 py-2 font-bold shadow-lg animate-blink hover:scale-110 transition-all duration-300 cursor-pointer">
-    <PhoneCall className="w-5 h-5 text-white" />
-    7740847114
-  </div>
+              <PhoneCall className="w-5 h-5 text-white" />
+              +91-9311587744
+            </div>
             {/* Cart */}
             <button
               onClick={() => handleNavigation("cart", "cart")}
@@ -231,7 +228,7 @@ useEffect(() => {
               </button>
 
               {/* User Dropdown */}
-               {isLoggedIn && userDropdownOpen && (
+              {isLoggedIn && userDropdownOpen && (
                 <div className="absolute top-full mt-2 right-0 w-40 bg-white shadow-lg rounded-md z-50">
                   <div className="p-2 border-b border-gray-200">
                     <span className="text-sm font-semibold text-gray-900 block truncate">
@@ -324,12 +321,12 @@ useEffect(() => {
                     </button>
 
                     <button
-      onClick={handleLogout}
-      className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50"
-    >
-      <LogOut className="w-4 h-4 mr-3" />
-      Logout
-    </button>
+                      onClick={handleLogout}
+                      className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                    >
+                      <LogOut className="w-4 h-4 mr-3" />
+                      Logout
+                    </button>
                   </div>
                 </div>
               )}
@@ -344,9 +341,8 @@ useEffect(() => {
           {/* Home */}
           <button
             onClick={() => handleNavigation("home", "home")}
-            className={`flex flex-col items-center p-2 ${
-              activeTab === "home" ? "text-blue-600" : "text-gray-500"
-            }`}
+            className={`flex flex-col items-center p-2 ${activeTab === "home" ? "text-blue-600" : "text-gray-500"
+              }`}
           >
             <Home className="w-6 h-6" />
             <span className="text-xs font-medium mt-1">Home</span>
@@ -355,9 +351,8 @@ useEffect(() => {
           {/* Bookings */}
           <button
             onClick={() => handleNavigation("bookings", "bookings")}
-            className={`flex flex-col items-center p-2 ${
-              activeTab === "bookings" ? "text-blue-600" : "text-gray-500"
-            }`}
+            className={`flex flex-col items-center p-2 ${activeTab === "bookings" ? "text-blue-600" : "text-gray-500"
+              }`}
           >
             <Calendar className="w-6 h-6" />
             <span className="text-xs font-medium mt-1">Bookings</span>
@@ -366,9 +361,8 @@ useEffect(() => {
           {/* Profile */}
           <button
             onClick={() => handleNavigation("profile", "profile")}
-            className={`flex flex-col items-center p-2 ${
-              activeTab === "profile" ? "text-blue-600" : "text-gray-500"
-            }`}
+            className={`flex flex-col items-center p-2 ${activeTab === "profile" ? "text-blue-600" : "text-gray-500"
+              }`}
           >
             <User className="w-6 h-6" />
             <span className="text-xs font-medium mt-1">Profile</span>
@@ -377,9 +371,8 @@ useEffect(() => {
           {/* Call */}
           <button
             onClick={handleCall}
-            className={`flex flex-col items-center p-2 ${
-              activeTab === "call" ? "text-blue-600" : "text-gray-500"
-            }`}
+            className={`flex flex-col items-center p-2 ${activeTab === "call" ? "text-blue-600" : "text-gray-500"
+              }`}
           >
             <Phone className="w-6 h-6" />
             <span className="text-xs font-medium mt-1">Call</span>
@@ -393,7 +386,7 @@ useEffect(() => {
       {/* Add padding for mobile bottom nav */}
       <div className="md:hidden h-16"></div>
     </>
-  );
+  ); 
 };
 
 export default Navbar;

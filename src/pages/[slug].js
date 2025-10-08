@@ -40,6 +40,10 @@ export default function ROServicePage() {
   const [city, setCity] = useState("");
   const [invalid, setInvalid] = useState(false);
   const { isLoggedIn, handleLoginSuccess } = useAuth();
+  const [brands, setBrands] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  
 
   const { brand, isCustomerCare } = parseCustomerCareSlug(slug);
 
@@ -48,10 +52,7 @@ export default function ROServicePage() {
 
   const [pageData, setPageData] = useState(null);
 
-
   // const cityWase
-
-
 
 
   // Ref for auto-scroll
@@ -107,9 +108,6 @@ export default function ROServicePage() {
   // console.log("Brand:", brand);       // Kent
   // console.log("Category:", category); // Customer Care
   // console.log("City:", citys);         // Delhi44
-
-
-  console.log("slugggggggggggggggg", slug);
 
 
 
@@ -359,26 +357,26 @@ export default function ROServicePage() {
 
   // Add to cart handler
   // Add to cart
- const handleAddToCart = useCallback((service) => {
-  if (!isLoggedIn) {
-    setOpenLoginModal(true);
-    return; // Stop execution if not logged in
-  }
+  const handleAddToCart = useCallback((service) => {
+    if (!isLoggedIn) {
+      setOpenLoginModal(true);
+      return; // Stop execution if not logged in
+    }
 
-  const existingItem = cartData.find(item => item.service_id === service.id);
-  const currentQuantity = existingItem ? parseInt(existingItem.quantity) : 0;
+    const existingItem = cartData.find(item => item.service_id === service.id);
+    const currentQuantity = existingItem ? parseInt(existingItem.quantity) : 0;
 
-  handleCartAction({
-    serviceId: service.id,
-    operation: "add",
-    currentQuantity
-  });
+    handleCartAction({
+      serviceId: service.id,
+      operation: "add",
+      currentQuantity
+    });
 
-  if (!existingItem) {
-    // Add to local cartData for UI
-    setCartData(prev => [...prev, { service_id: service.id, quantity: 1 }]);
-  }
-}, [cartData, handleCartAction, setCartData, isLoggedIn]); // include isLoggedIn in dependencies
+    if (!existingItem) {
+      // Add to local cartData for UI
+      setCartData(prev => [...prev, { service_id: service.id, quantity: 1 }]);
+    }
+  }, [cartData, handleCartAction, setCartData, isLoggedIn]); // include isLoggedIn in dependencies
 
 
   // Increase quantity
@@ -499,20 +497,89 @@ export default function ROServicePage() {
 
 
 
-  // const slugFilter = slug.split("-")
-  // console.log("slugFilter",slugFilter);
+   
+  useEffect(() => {
+    if (!slug) return;
 
+    const fetchBrands = async () => {
+      try {
+        const res = await fetch("/api/getBrands");
+        const data = await res.json();
+        setBrands(data);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false); // ✅ only set loading false after fetching
+      }
+    };
 
-  // Service page: add to cart button or checkout buttons
+    fetchBrands();
+  }, [slug]);
 
-
-  if (invalid) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[80vh] bg-gradient-to-b from-blue-50 to-white px-6">
-        <div className="bg-red-100 p-4 rounded-full mb-6">
+if (loading) {
+  return (
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-b from-blue-50 to-white">
+      {/* Water Drop Spinner */}
+      <div className="relative">
+        <div className="w-16 h-16 rounded-full border-4 border-t-transparent border-blue-500 animate-spin"></div>
+        <div className="absolute inset-0 flex items-center justify-center">
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            className="h-12 w-12 text-red-600"
+            className="w-8 h-8 text-blue-500 animate-pulse"
+            viewBox="0 0 24 24"
+            fill="currentColor"
+          >
+            <path d="M12 2C12 2 7 8 7 12.5C7 16.09 9.91 19 13.5 19C17.09 19 20 16.09 20 12.5C20 8 15 2 15 2H12Z" />
+          </svg>
+        </div>
+      </div>
+
+      {/* Text Animation */}
+      <p className="mt-6 text-lg md:text-xl font-semibold text-blue-600 animate-pulse">
+        Loading RO Customer Care...
+      </p>
+    </div>
+  );
+}
+
+
+  const validCities = [
+    "gurgaon", "delhi", "mumbai", "bangalore", "hyderabad", "ahmedabad",
+    "chennai", "kolkata", "noida", "ghaziabad", "faridabad", "surat", "pune",
+    "jaipur", "lucknow", "kanpur", "thane", "patna", "indore", "bhopal",
+    "ranchi", "greater-noida", "meerut", "varanasi", "allahabad", "prayagraj",
+    "chandigarh"
+  ];
+
+  const normalizedSlug = slug?.replace(/\/$/, "").trim().toLowerCase();
+
+  // ✅ Check if slug matches any brand page_url
+  const matchBrand = brands.find((brand) =>
+    brand.page_urls?.some((url) => url.trim().toLowerCase() === normalizedSlug)
+  );
+
+  // ✅ Check if slug matches valid patterns
+  let matchesValidPattern = false;
+  if (normalizedSlug === "ro-customer-care" || normalizedSlug === "ro-service") {
+    matchesValidPattern = true;
+  }
+  if (normalizedSlug?.startsWith("ro-customer-care-")) {
+    const city = normalizedSlug.replace("ro-customer-care-", "");
+    matchesValidPattern = validCities.includes(city);
+  }
+  if (normalizedSlug?.startsWith("ro-service-")) {
+    const city = normalizedSlug.replace("ro-service-", "");
+    matchesValidPattern = validCities.includes(city);
+  }
+
+  // ✅ Only show 404 if data loaded and no match found
+  if (!matchBrand && !matchesValidPattern) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-b from-blue-50 to-white px-6 text-center">
+        <div className="bg-red-100 p-6 rounded-full mb-6 shadow-lg animate-pulse">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-16 w-16 text-red-600 mx-auto"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -525,32 +592,49 @@ export default function ROServicePage() {
             />
           </svg>
         </div>
-        <h1 className="text-3xl font-bold text-gray-800">404 - City Not Found</h1>
-        <p className="mt-3 text-gray-600 text-lg max-w-md text-center">
-          Oops! The city you are looking for doesn&apos;t exist in our service area.
-          Please check the link or go back.
+
+        <h1 className="text-4xl md:text-5xl font-extrabold text-gray-800 mb-4">
+          404
+        </h1>
+        <h2 className="text-xl md:text-2xl font-semibold text-gray-700 mb-4">
+          Page Not Found
+        </h2>
+        <p className="text-gray-600 text-base md:text-lg max-w-lg mb-6">
+          The page you are looking for doesn&apos;t exist. Please check the URL or go back to the homepage.
         </p>
 
-        <button
-          onClick={() => window.history.back()}
-          className="mt-6 px-6 py-3 bg-blue-600 text-white font-medium rounded-lg shadow-md hover:bg-blue-700 transition"
-        >
-          ⬅ Go Back
-        </button>
+        <div className="flex flex-col md:flex-row gap-4 justify-center">
+          <button
+            onClick={() => router.back()}
+            className="px-6 py-3 bg-blue-600 text-white font-medium rounded-lg shadow hover:bg-blue-700 transition"
+          >
+            ⬅ Go Back
+          </button>
+
+          <a
+            href="/"
+            className="px-6 py-3 bg-gray-200 text-gray-800 font-medium rounded-lg shadow hover:bg-gray-300 transition"
+          >
+            🏠 Home
+          </a>
+        </div>
       </div>
     );
   }
 
+// ✅ Render brand page or valid pattern page here
+
+
+    
 
 
 
 
+  // const slugFilter = slug.split("-")
+  // console.log("slugFilter",slugFilter);
 
 
-
-
-
-
+  // Service page: add to cart button or checkout buttons
 
 
   return (
@@ -561,7 +645,7 @@ export default function ROServicePage() {
           {!isCustomerCare ? (
             <div className="grid lg:grid-cols-12 gap-6">
               {/* Left Sidebar - Service Categories - STICKY */}
-              <div className="lg:col-span-2">
+              <div className="lg:col-span-3">
                 <div className="sticky top-20 bg-white rounded-lg p-4 shadow-sm">
                   <div className="flex items-center gap-2 mb-4">
                     <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
@@ -603,7 +687,7 @@ export default function ROServicePage() {
                 {/* Hero Section */}
                 <Image
                   src={RoServiceCare}
-                  alt="RO Service Care"
+                  alt="RO-Customer-Care-banner-image"
                   priority
                   loading="eager"
                   className="hidden md:block rounded-xl shadow-lg object-contain mb-4"
@@ -764,8 +848,16 @@ export default function ROServicePage() {
                 </div>
               </div>
 
+
+
               {/* Right Sidebar - Cart and Info - STICKY */}
-              <div className="lg:col-span-4">
+              <div className="lg:col-span-3">
+                <div className="section-heading">
+                  <strong>Best and Qualified RO Water Purifier Services in India.</strong>
+                  <p>
+                    Get connected with the industry's best. RO Customer Care Service provides a nationwide network of trained and skilled experts. We solve your RO water purifier related issues swiftly and ensure you get the best quality of drinking water.
+                  </p>
+                </div>
                 <div className="sticky top-20 space-y-6 max-h-[calc(100vh-6rem)] overflow-y-auto">
                   {/* Cart Section */}
                   <div className="bg-white rounded-lg shadow-sm hidden sm:block">
@@ -839,6 +931,7 @@ export default function ROServicePage() {
                       )}
                     </div>
                   </div>
+
 
 
                   {/* Why Choose Us Section */}
@@ -971,8 +1064,6 @@ export default function ROServicePage() {
           </Link>
         </div>
       )}
-
-
     </>
   );
 }

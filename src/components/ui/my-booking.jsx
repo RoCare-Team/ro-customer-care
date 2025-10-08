@@ -28,6 +28,7 @@ import {
   FiMaximize2,
   FiLoader
 } from "react-icons/fi";
+import Navbar from "../layout/Navbar";
 
 function Booking() {
   const [activeTab, setActiveTab] = useState("Active");
@@ -423,6 +424,7 @@ const handleCancelBooking = async () => {
         <title>Booking History | Your Service Bookings</title>
         <meta name="description" content="View your active, completed, and cancelled service bookings." />
       </Head>
+      <Navbar/>
 
 
       <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-2 sm:p-4">

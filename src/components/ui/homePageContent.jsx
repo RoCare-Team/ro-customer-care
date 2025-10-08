@@ -6,9 +6,10 @@ export default function WaterPurifierServicePage() {
 
             {/* Title Section */}
             <section className="">
-                <p className="text-5xl md:text-4xl font-bold text-gray-700 mb-6 leading-tight">
+                <p className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-700 mb-6 leading-tight">
   Water Purifier Service – Get Contamination Free Water At Your Doorstep
 </p>
+
 
                 <p className="text-gray-600 text-base md:text-lg">
                     Water purifier service is major as it improves the life of the water purifier and increases its durability.

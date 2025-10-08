@@ -7,14 +7,14 @@ const BrandListSection = () => {
   const [loading, setLoading] = useState(true);
   const [selectedBrands, setSeletedBrands] = useState([]);
 
+
+
   useEffect(() => {
     async function fetchAllBrands() {
       try {
         const response = await fetch("/api/getBrands");
         if (response.ok) {
           const data = await response.json();
-          console.log("data", data);
-
           setBrands(data);
         } else {
           const errData = await response.json().catch(() => ({}));
@@ -62,17 +62,31 @@ const BrandListSection = () => {
           Our Trusted Brands
         </h2>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
-          {sortedBrands.slice(0, visibleCount).map((brand, idx) => (
-            <Link key={idx} href={`/${brand.page_url || "#"}`} legacyBehavior onClick={handlerBrands}>
-              <a className="relative flex flex-col items-center justify-center p-6 bg-white rounded-xl border border-blue-200 shadow-sm hover:shadow-lg hover:-translate-y-1 transform transition duration-300 group">
-                <h3 className="text-lg font-semibold text-blue-700 group-hover:text-blue-800 text-center">
-                  {brand.brand}
-                </h3>
-              </a>
-            </Link>
-          ))}
-        </div>
+<div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+  {sortedBrands.slice(0, visibleCount).map((brand, idx) => {
+    // ✅ Correct the URL if it's kent-ro-service-memari
+    const redirectUrl =
+      brand.main_url === "kent-ro-service-memari"
+        ? "kent-ro-service"
+        : brand.main_url || "#";
+
+    return (
+      <Link
+        key={idx}
+        href={`/${redirectUrl}`}
+        legacyBehavior
+        onClick={handlerBrands}
+      >
+        <a className="relative flex flex-col items-center justify-center p-6 bg-white rounded-xl border border-blue-200 shadow-sm hover:shadow-lg hover:-translate-y-1 transform transition duration-300 group">
+          <h3 className="text-lg font-semibold text-blue-700 group-hover:text-blue-800 text-center">
+            {brand.brand}
+          </h3>
+        </a>
+      </Link>
+    );
+  })}
+</div>
+
 
         {sortedBrands.length > 5 && (
           <div className="text-center mt-8">
