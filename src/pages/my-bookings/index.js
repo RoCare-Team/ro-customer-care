@@ -30,6 +30,7 @@ import {
 } from "react-icons/fi";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
+import Image from "next/image";
 
 function Booking() {
   const [activeTab, setActiveTab] = useState("Active");
@@ -67,11 +68,15 @@ function Booking() {
   }, []);
 
   // Fetch data when tab changes or component mounts
-  useEffect(() => {
-    if (isMounted) {
-      fetchBookings();
-    }
-  }, [activeTab, isMounted]);
+  // useEffect(() => {
+  //   if (isMounted) {
+  //     fetchBookings();
+  //   }
+  // }, [activeTab, isMounted]);
+
+  useEffect(()=>{
+fetchBookings()
+  },[])
 
   const fetchBookings = async () => {
     try {
@@ -688,9 +693,10 @@ const handleCancelBooking = async () => {
                       </h4>
                       <div className="relative group">
                         <div className="w-full h-72 bg-slate-100 rounded-2xl border-2 border-blue-100 overflow-hidden">
-                          <img
-                            src={selectedBooking.image}
+                          <Image                            src={selectedBooking.image}
                             alt="Service reference"
+                            width={200}
+                            height={200}
                             className="w-full h-full object-contain p-4"
                             onError={(e) => {
                               e.target.src = 'https://www.waterpurifierservicecenter.in/customer_app_images/service_and_repair.jpg';

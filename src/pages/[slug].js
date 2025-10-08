@@ -610,13 +610,11 @@ if (loading) {
           >
             ⬅ Go Back
           </button>
-
-          <a
-            href="/"
-            className="px-6 py-3 bg-gray-200 text-gray-800 font-medium rounded-lg shadow hover:bg-gray-300 transition"
-          >
-            🏠 Home
-          </a>
+<Link href="/" legacyBehavior>
+  <a className="px-6 py-3 bg-gray-200 text-gray-800 font-medium rounded-lg shadow hover:bg-gray-300 transition">
+    🏠 Home
+  </a>
+</Link>
         </div>
       </div>
     );
@@ -855,7 +853,7 @@ if (loading) {
                 <div className="section-heading">
                   <strong>Best and Qualified RO Water Purifier Services in India.</strong>
                   <p>
-                    Get connected with the industry's best. RO Customer Care Service provides a nationwide network of trained and skilled experts. We solve your RO water purifier related issues swiftly and ensure you get the best quality of drinking water.
+                    Get connected with the industry&apos;s best. RO Customer Care Service provides a nationwide network of trained and skilled experts. We solve your RO water purifier related issues swiftly and ensure you get the best quality of drinking water.
                   </p>
                 </div>
                 <div className="sticky top-20 space-y-6 max-h-[calc(100vh-6rem)] overflow-y-auto">
