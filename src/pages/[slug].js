@@ -25,7 +25,6 @@ const serviceCategories = [
   { id: 4, name: "Installation", apiName: "Installation", icon: Truck, color: "bg-orange-100 text-orange-600" },
   { id: 5, name: "Un-installation", apiName: "Un-installation", icon: Zap, color: "bg-red-100 text-red-600" }
 ];
-
 export default function ROServicePage() {
   const router = useRouter();
   const [allServices, setAllServices] = useState([]);
@@ -42,6 +41,8 @@ export default function ROServicePage() {
   const { isLoggedIn, handleLoginSuccess } = useAuth();
   const [brands, setBrands] = useState([]);
   const [loading, setLoading] = useState(true);
+    const [isInstallation, setIsInstallation] = useState(false);
+
 
   
 
@@ -108,6 +109,7 @@ export default function ROServicePage() {
   // console.log("Brand:", brand);       // Kent
   // console.log("Category:", category); // Customer Care
   // console.log("City:", citys);         // Delhi44
+
 
 
 
@@ -495,7 +497,46 @@ export default function ROServicePage() {
   }, [cartData]);
 
 
+useEffect(() => {
+  if (!slug) return;
 
+  const lowerSlug = slug.toLowerCase();
+
+  let matchedCategory = null;
+
+  // First check for Un-installation (must come before Installation)
+  if (
+    lowerSlug.includes("uninstallation") ||
+    lowerSlug.includes("un-installation")
+  ) {
+    matchedCategory = serviceCategories.find(
+      (cat) => cat.apiName.toLowerCase() === "un-installation"
+    );
+  }
+
+  // Then check for Installation (only if Un-installation didn’t match)
+  else if (
+    lowerSlug.includes("installation") ||
+    lowerSlug.includes("install")
+  ) {
+    matchedCategory = serviceCategories.find(
+      (cat) => cat.apiName.toLowerCase() === "installation"
+    );
+  }
+
+  // Then check for AMC, Repair, Service, etc.
+  else {
+    matchedCategory = serviceCategories.find((cat) =>
+      lowerSlug.includes(cat.apiName.toLowerCase())
+    );
+  }
+
+  if (matchedCategory) {
+    setSelectedCategory(matchedCategory.id);
+  } else {
+    setSelectedCategory(0); // default All
+  }
+}, [slug]);
 
    
   useEffect(() => {
@@ -1011,7 +1052,7 @@ if (loading) {
 
           <FaqSectionRO />
 
-          <BlueNearbyAreas />
+          {/* <BlueNearbyAreas /> */}
           <OurBrandSection />
         </div>
       </div>

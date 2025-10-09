@@ -11,13 +11,24 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { message } = await req.body;
+    const { message } = req.body;
+    if (!message) return res.status(400).json({ error: "Message is required" });
 
-    // 🟩 STEP 1: Fetch your live website homepage (HTML)
-    const websiteResponse = await fetch("https://ro-customer-care.vercel.app/");
-    const websiteHTML = await websiteResponse.text(); // <— NOT .json()
+    // 🔹 Use absolute URL with proper headers
+    const websiteResponse = await fetch("https://ro-customer-care.vercel.app", {
+      headers: {
+        "User-Agent": "Mozilla/5.0 (compatible; AI-Bot/1.0)", // prevents blocks
+      },
+    });
 
-    // 🟩 STEP 2: Send that website content + user query to OpenAI
+    if (!websiteResponse.ok) {
+      console.error("Failed to fetch website, status:", websiteResponse.status);
+      return res.status(500).json({ reply: "Unable to fetch website content." });
+    }
+
+    const websiteHTML = await websiteResponse.text();
+
+    // 🔹 Send website content + user question to OpenAI
     const completion = await openai.chat.completions.create({
       model: "gpt-4-turbo",
       messages: [
@@ -25,8 +36,7 @@ export default async function handler(req, res) {
           role: "system",
           content: `
           You are a professional AI assistant for the RO Customer Care website.
-          You answer based on the website content provided below.
-          Be concise, polite, and factual.
+          Answer based only on the website content provided below. Be concise and factual.
           `,
         },
         {
@@ -42,10 +52,10 @@ export default async function handler(req, res) {
       temperature: 0.4,
     });
 
-    const reply = completion.choices[0].message.content;
+    const reply = completion.choices?.[0]?.message?.content || "No reply generated";
     res.status(200).json({ reply });
   } catch (err) {
-    console.error("Error in chat API:", err);
-    res.status(500).json({ reply: "Sorry, something went wrong while fetching information." });
+    console.error("Error in AI handler:", err);
+    res.status(500).json({ reply: "Something went wrong while processing your request." });
   }
 }
