@@ -56,7 +56,7 @@ export default function ROServiceContent({ pageData }) {
       {pageData?.page_title}
       </h1>
 
-      <p className="text-justify" dangerouslySetInnerHTML={{
+      <p className="text-justify text-gray-700 dark:text-gray-800"  dangerouslySetInnerHTML={{
     __html: pageData &&  DOMPurify?.sanitize(pageData?.content_text || "")
   }}>
         

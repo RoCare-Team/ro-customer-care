@@ -14,7 +14,7 @@ import FaqSectionRO from "@/components/ui/customerReview";
 
 export default function Home() {
   return (
-    <>
+<div className="bg-white dark:bg-white text-gray-700 dark:text-gray-800 font-sans min-h-screen">
     <Navbar/>
     <CommonBanner/>
      <BookService/>
@@ -25,6 +25,6 @@ export default function Home() {
      <FaqSectionRO/>
      <BrandListSection/>
     <Footer/>
-    </>
+    </div>
   );
 }

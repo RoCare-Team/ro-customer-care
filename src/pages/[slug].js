@@ -41,10 +41,10 @@ export default function ROServicePage() {
   const { isLoggedIn, handleLoginSuccess } = useAuth();
   const [brands, setBrands] = useState([]);
   const [loading, setLoading] = useState(true);
-    const [isInstallation, setIsInstallation] = useState(false);
+  const [isInstallation, setIsInstallation] = useState(false);
 
 
-  
+
 
   const { brand, isCustomerCare } = parseCustomerCareSlug(slug);
 
@@ -83,7 +83,6 @@ export default function ROServicePage() {
     "Indore",
     "Bhopal",
     "Ranchi",
-    "Greater Noida",
     "Meerut",
     "Varanasi",
     "Allahabad",
@@ -497,48 +496,48 @@ export default function ROServicePage() {
   }, [cartData]);
 
 
-useEffect(() => {
-  if (!slug) return;
+  useEffect(() => {
+    if (!slug) return;
 
-  const lowerSlug = slug.toLowerCase();
+    const lowerSlug = slug.toLowerCase();
 
-  let matchedCategory = null;
+    let matchedCategory = null;
 
-  // First check for Un-installation (must come before Installation)
-  if (
-    lowerSlug.includes("uninstallation") ||
-    lowerSlug.includes("un-installation")
-  ) {
-    matchedCategory = serviceCategories.find(
-      (cat) => cat.apiName.toLowerCase() === "un-installation"
-    );
-  }
+    // First check for Un-installation (must come before Installation)
+    if (
+      lowerSlug.includes("uninstallation") ||
+      lowerSlug.includes("un-installation")
+    ) {
+      matchedCategory = serviceCategories.find(
+        (cat) => cat.apiName.toLowerCase() === "un-installation"
+      );
+    }
 
-  // Then check for Installation (only if Un-installation didn’t match)
-  else if (
-    lowerSlug.includes("installation") ||
-    lowerSlug.includes("install")
-  ) {
-    matchedCategory = serviceCategories.find(
-      (cat) => cat.apiName.toLowerCase() === "installation"
-    );
-  }
+    // Then check for Installation (only if Un-installation didn’t match)
+    else if (
+      lowerSlug.includes("installation") ||
+      lowerSlug.includes("install")
+    ) {
+      matchedCategory = serviceCategories.find(
+        (cat) => cat.apiName.toLowerCase() === "installation"
+      );
+    }
 
-  // Then check for AMC, Repair, Service, etc.
-  else {
-    matchedCategory = serviceCategories.find((cat) =>
-      lowerSlug.includes(cat.apiName.toLowerCase())
-    );
-  }
+    // Then check for AMC, Repair, Service, etc.
+    else {
+      matchedCategory = serviceCategories.find((cat) =>
+        lowerSlug.includes(cat.apiName.toLowerCase())
+      );
+    }
 
-  if (matchedCategory) {
-    setSelectedCategory(matchedCategory.id);
-  } else {
-    setSelectedCategory(0); // default All
-  }
-}, [slug]);
+    if (matchedCategory) {
+      setSelectedCategory(matchedCategory.id);
+    } else {
+      setSelectedCategory(0); // default All
+    }
+  }, [slug]);
 
-   
+
   useEffect(() => {
     if (!slug) return;
 
@@ -557,31 +556,31 @@ useEffect(() => {
     fetchBrands();
   }, [slug]);
 
-if (loading) {
-  return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-b from-blue-50 to-white">
-      {/* Water Drop Spinner */}
-      <div className="relative">
-        <div className="w-16 h-16 rounded-full border-4 border-t-transparent border-blue-500 animate-spin"></div>
-        <div className="absolute inset-0 flex items-center justify-center">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="w-8 h-8 text-blue-500 animate-pulse"
-            viewBox="0 0 24 24"
-            fill="currentColor"
-          >
-            <path d="M12 2C12 2 7 8 7 12.5C7 16.09 9.91 19 13.5 19C17.09 19 20 16.09 20 12.5C20 8 15 2 15 2H12Z" />
-          </svg>
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-b from-blue-50 to-white">
+        {/* Water Drop Spinner */}
+        <div className="relative">
+          <div className="w-16 h-16 rounded-full border-4 border-t-transparent border-blue-500 animate-spin"></div>
+          <div className="absolute inset-0 flex items-center justify-center">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="w-8 h-8 text-blue-500 animate-pulse"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+            >
+              <path d="M12 2C12 2 7 8 7 12.5C7 16.09 9.91 19 13.5 19C17.09 19 20 16.09 20 12.5C20 8 15 2 15 2H12Z" />
+            </svg>
+          </div>
         </div>
-      </div>
 
-      {/* Text Animation */}
-      <p className="mt-6 text-lg md:text-xl font-semibold text-blue-600 animate-pulse">
-        Loading RO Customer Care...
-      </p>
-    </div>
-  );
-}
+        {/* Text Animation */}
+        <p className="mt-6 text-lg md:text-xl font-semibold text-blue-600 animate-pulse">
+          Loading RO Customer Care...
+        </p>
+      </div>
+    );
+  }
 
 
   const validCities = [
@@ -589,7 +588,7 @@ if (loading) {
     "chennai", "kolkata", "noida", "ghaziabad", "faridabad", "surat", "pune",
     "jaipur", "lucknow", "kanpur", "thane", "patna", "indore", "bhopal",
     "ranchi", "greater-noida", "meerut", "varanasi", "allahabad", "prayagraj",
-    "chandigarh"
+    "chandigarh",
   ];
 
   const normalizedSlug = slug?.replace(/\/$/, "").trim().toLowerCase();
@@ -651,20 +650,20 @@ if (loading) {
           >
             ⬅ Go Back
           </button>
-<Link href="/" legacyBehavior>
-  <a className="px-6 py-3 bg-gray-200 text-gray-800 font-medium rounded-lg shadow hover:bg-gray-300 transition">
-    🏠 Home
-  </a>
-</Link>
+          <Link href="/" legacyBehavior>
+            <a className="px-6 py-3 bg-gray-200 text-gray-800 font-medium rounded-lg shadow hover:bg-gray-300 transition">
+              🏠 Home
+            </a>
+          </Link>
         </div>
       </div>
     );
   }
 
-// ✅ Render brand page or valid pattern page here
+  // ✅ Render brand page or valid pattern page here
 
 
-    
+
 
 
 
@@ -732,6 +731,7 @@ if (loading) {
                   className="hidden md:block rounded-xl shadow-lg object-contain mb-4"
                 />
 
+
                 {/* Services Section */}
                 <div ref={servicesRef} className="mb-6">
                   <div className="flex items-center justify-between mb-6">
@@ -778,7 +778,7 @@ if (loading) {
                         const quantity = cartItem ? parseInt(cartItem.quantity) || 0 : 0;
 
                         return (
-                          <div key={service.id} className="bg-white rounded-lg p-6 shadow-sm border border-gray-200 hover:border-blue-300 hover:shadow-md transition-all">
+                          <div key={service.id} className="bg-white rounded-lg p-6 shadow-sm border border-gray-200 hover:border-blue-300 hover:shadow-md transition-all text-gray-700 dark:text-gray-800">
                             <div className="flex flex-row gap-4 p-3 rounded-xl border border-gray-200 shadow-sm">
                               {/* Service Info */}
                               <div className="flex-1">
@@ -891,12 +891,15 @@ if (loading) {
 
               {/* Right Sidebar - Cart and Info - STICKY */}
               <div className="lg:col-span-3">
-                <div className="section-heading">
-                  <strong>Best and Qualified RO Water Purifier Services in India.</strong>
-                  <p>
-                    Get connected with the industry&apos;s best. RO Customer Care Service provides a nationwide network of trained and skilled experts. We solve your RO water purifier related issues swiftly and ensure you get the best quality of drinking water.
+                <div className="section-heading bg-white text-gray-800 font-sans p-4 rounded-lg">
+                  <strong className="block text-lg md:text-xl mb-2">
+                    Best and Qualified RO Water Purifier Services in India.
+                  </strong>
+                  <p className="text-gray-700">
+                    Get connected with the industry's best. RO Customer Care Service provides a nationwide network of trained and skilled experts. We solve your RO water purifier related issues swiftly and ensure you get the best quality of drinking water.
                   </p>
                 </div>
+
                 <div className="sticky top-20 space-y-6 max-h-[calc(100vh-6rem)] overflow-y-auto">
                   {/* Cart Section */}
                   <div className="bg-white rounded-lg shadow-sm hidden sm:block">
@@ -926,7 +929,7 @@ if (loading) {
                             const serviceQuantity = parseInt(item.quantity) || 0;
 
                             return (
-                              <div key={index} className="border border-gray-200 rounded-lg p-3">
+                              <div key={index} className="border border-gray-200 rounded-lg p-3 text-gray-700 dark:text-gray-800">
                                 <h4 className="font-medium text-gray-900 mb-2">{serviceName}</h4>
                                 <div className="flex items-center justify-between mb-3">
                                   <span className="text-blue-600 font-semibold">₹{servicePrice}</span>
@@ -955,7 +958,7 @@ if (loading) {
                           })}
 
                           {/* Cart Total and Checkout */}
-                          <div className="border-t pt-4">
+                          <div className="border-t pt-4 text-gray-700 dark:text-gray-800">
                             <div className="flex justify-between items-center mb-4">
                               <span className="font-semibold">Total</span>
                               <span className="text-xl font-bold text-blue-600">₹{totalPrice}</span>
@@ -970,8 +973,6 @@ if (loading) {
                       )}
                     </div>
                   </div>
-
-
 
                   {/* Why Choose Us Section */}
                   <div className="bg-white rounded-lg p-4 shadow-sm">

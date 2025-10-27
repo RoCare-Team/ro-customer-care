@@ -32,49 +32,51 @@ const Navbar = () => {
   const userDropdownRef = useRef(null);
   const mobileUserDropdownRef = useRef(null);
 
+  console.log("cartCount",cartCount);
+  
+
   // ✅ Load cart data and calculate count
-  useEffect(() => {
-    const loadCartData = () => {
-      const cartItems = getCartItems();
-      if (!Array.isArray(cartItems)) {
-        setCartCount(0);
-        return;
-      }
+  // useEffect(() => {
+  //   const loadCartData = () => {
+  //     const cartItems = getCartItems();
+  //     console.log("totalItems",cartItems.length,);
+      
+  //     if (!Array.isArray(cartItems)) {
+  //       setCartCount(0);
+  //       return;
+  //     }
 
-      // Count total quantity or items
-      const totalItems = cartItems.reduce(
-        (sum, item) => sum + (parseInt(item.quantity) || 1),
-        0
-      );
+  //     // Count total quantity or items
+  //     // const totalItems = cartItems.reduce(
+  //     //   (sum, item) => sum + (parseInt(item.quantity) || 1),
+  //     //   0
+  //     // );
 
-      setCartCount(totalItems);
-    };
+  //     setCartCount(cartItems.length);
+  //   };
 
-    // Initial load
-    loadCartData();
+  //   // Initial load
+  //   loadCartData();
 
-    // Update on storage/cart changes
-    window.addEventListener("storage", loadCartData);
-    window.addEventListener("cartUpdated", loadCartData);
+  //   // Update on storage/cart changes
+  //   window.addEventListener("storage", loadCartData);
+  //   window.addEventListener("cartUpdated", loadCartData);
 
-    return () => {
-      window.removeEventListener("storage", loadCartData);
-      window.removeEventListener("cartUpdated", loadCartData);
-    };
-  }, [isLoggedIn]);
+  //   return () => {
+  //     window.removeEventListener("storage", loadCartData);
+  //     window.removeEventListener("cartUpdated", loadCartData);
+  //   };
+  // }, [isLoggedIn]);
 
 
-  useEffect(() => {
-    if (carts && carts.length) {
-      const totalItems = carts.reduce(
-        (sum, item) => sum + (parseInt(item.quantity) || 1),
-        0
-      );
-      setCartCount(totalItems);
-    } else {
-      setCartCount(0);
+  useEffect(()=>{
+    if(cartCount?.length >= 0){
+      setCartCount(cartCount.length)
     }
-  }, [carts]);
+  },[cartCount])
+  
+
+
 
 
 

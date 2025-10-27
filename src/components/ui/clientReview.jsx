@@ -4,7 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import { Star } from "lucide-react";
 import { Swiper, SwiperSlide } from "swiper/react";
-import { Pagination, Autoplay } from "swiper/modules"; // ✅ Navigation removed
+import { Pagination, Autoplay } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/pagination";
 
@@ -62,17 +62,17 @@ export default function ClientReviews() {
   const [selected, setSelected] = useState(null);
 
   return (
-    <section className="py-12 bg-gray-50">
+    <section className="py-12 bg-white dark:bg-white"> {/* Always white */}
       <div className="max-w-7xl mx-auto px-4">
-        <h2 className="text-2xl md:text-3xl font-bold text-center mb-10">
+        <h2 className="text-2xl md:text-3xl font-bold text-center mb-10 text-gray-800 dark:text-gray-800">
           What Our Clients Say
         </h2>
 
         <Swiper
-          modules={[Pagination, Autoplay]} // ✅ Navigation removed
+          modules={[Pagination, Autoplay]}
           spaceBetween={30}
           slidesPerView={1}
-          autoplay={{ delay: 3000, disableOnInteraction: false }} // ✅ Auto play enabled
+          autoplay={{ delay: 3000, disableOnInteraction: false }}
           pagination={{ clickable: true }}
           breakpoints={{
             640: { slidesPerView: 1 },
@@ -85,7 +85,7 @@ export default function ClientReviews() {
             <SwiperSlide key={review.id}>
               <div
                 onClick={() => setSelected(review.id)}
-                className="bg-white p-6 rounded-2xl shadow-md hover:shadow-xl transition duration-300 cursor-pointer h-full flex flex-col justify-between"
+                className="bg-white dark:bg-white p-6 rounded-2xl shadow-md hover:shadow-xl transition duration-300 cursor-pointer h-full flex flex-col justify-between"
               >
                 <div>
                   {/* User Info */}
@@ -98,8 +98,12 @@ export default function ClientReviews() {
                       className="rounded-full object-cover"
                     />
                     <div className="ml-4">
-                      <h3 className="font-semibold text-lg">{review.name}</h3>
-                      <p className="text-gray-500 text-sm">{review.location}</p>
+                      <h3 className="font-semibold text-lg text-gray-800 dark:text-gray-800">
+                        {review.name}
+                      </h3>
+                      <p className="text-gray-500 dark:text-gray-500 text-sm">
+                        {review.location}
+                      </p>
                     </div>
                   </div>
 
@@ -114,7 +118,7 @@ export default function ClientReviews() {
                   </div>
 
                   {/* Review Text */}
-                  <p className="text-gray-700 leading-relaxed">
+                  <p className="text-gray-700 dark:text-gray-700 leading-relaxed">
                     {review.review}
                   </p>
                 </div>
@@ -130,13 +134,13 @@ export default function ClientReviews() {
             onClick={() => setSelected(null)}
           >
             <div
-              className="bg-white p-6 rounded-2xl shadow-xl max-w-md mx-4"
+              className="bg-white dark:bg-white p-6 rounded-2xl shadow-xl max-w-md mx-4"
               onClick={(e) => e.stopPropagation()}
             >
-              <h3 className="text-xl font-bold mb-4">
+              <h3 className="text-xl font-bold mb-4 text-gray-800 dark:text-gray-800">
                 {reviews.find((r) => r.id === selected)?.name}
               </h3>
-              <p className="text-gray-700">
+              <p className="text-gray-700 dark:text-gray-700">
                 {reviews.find((r) => r.id === selected)?.review}
               </p>
             </div>

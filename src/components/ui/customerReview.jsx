@@ -9,6 +9,7 @@ const faqData = [
     answer:
       "You can book an RO service online through our website by selecting your city and preferred service date.",
   },
+  
   {
     question: "What services are included in RO maintenance?",
     answer:
@@ -40,7 +41,7 @@ export default function FaqSectionRO() {
 
   return (
     <div className="max-w-3xl mx-auto py-12 px-4">
-      <h2 className="text-3xl font-bold text-center mb-8">
+      <h2 className="text-3xl font-bold text-center mb-8 text-gray-700 dark:text-gray-800">
         RO Customer Service FAQs
       </h2>
 
@@ -49,18 +50,20 @@ export default function FaqSectionRO() {
           <motion.div
             key={index}
             layout
-            className="border rounded-lg overflow-hidden shadow-sm"
+            className="border rounded-lg overflow-hidden shadow-sm dark:border-gray-700"
           >
             {/* Question Button */}
             <button
               onClick={() => toggleFaq(index)}
-              className="w-full text-left px-6 py-4 flex justify-between items-center bg-blue-50 hover:bg-blue-100 transition"
+              className="w-full text-left px-6 py-4 flex justify-between items-center bg-blue-50 hover:bg-blue-100 dark:bg-gray-200 dark:hover:bg-gray-300 transition"
             >
-              <span className="font-medium">{faq.question}</span>
+              <span className="font-medium text-gray-900 dark:text-gray-800">
+                {faq.question}
+              </span>
               <motion.span
                 animate={{ rotate: openIndex === index ? 45 : 0 }}
                 transition={{ duration: 0.3 }}
-                className="text-xl font-bold"
+                className="text-xl font-bold text-gray-900 dark:text-gray-800"
               >
                 +
               </motion.span>
@@ -75,7 +78,7 @@ export default function FaqSectionRO() {
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
                   transition={{ duration: 0.3 }}
-                  className="px-6 py-4 bg-white text-gray-700"
+                  className="px-6 py-4 bg-white dark:bg-gray-100 text-gray-700 dark:text-gray-800"
                 >
                   {faq.answer}
                 </motion.div>

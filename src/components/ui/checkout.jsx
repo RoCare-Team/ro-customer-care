@@ -279,7 +279,7 @@ export default function CheckoutComp() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex justify-center p-4">
+    <div className="min-h-screen bg-gray-50 flex justify-center p-4 text-gray-700 dark:text-gray-800">
       <div className="max-w-5xl w-full bg-white shadow-xl rounded-2xl overflow-hidden grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* LEFT: CART SUMMARY */}
         <div className="bg-gray-100 p-6">
