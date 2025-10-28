@@ -15,7 +15,6 @@ import {
 import LoginModal from "../ui/login";
 import { useAuth } from "@/contexts/userAuth";
 import { getCartItems } from "@/utils/cardData";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 
 const Navbar = () => {
@@ -32,15 +31,15 @@ const Navbar = () => {
   const userDropdownRef = useRef(null);
   const mobileUserDropdownRef = useRef(null);
 
-  console.log("cartCount",cartCount);
-  
+  console.log("cartCount", cartCount);
+
 
   // ✅ Load cart data and calculate count
   // useEffect(() => {
   //   const loadCartData = () => {
   //     const cartItems = getCartItems();
   //     console.log("totalItems",cartItems.length,);
-      
+
   //     if (!Array.isArray(cartItems)) {
   //       setCartCount(0);
   //       return;
@@ -69,14 +68,11 @@ const Navbar = () => {
   // }, [isLoggedIn]);
 
 
-  useEffect(()=>{
-    if(cartCount?.length >= 0){
+  useEffect(() => {
+    if (cartCount?.length >= 0) {
       setCartCount(cartCount.length)
     }
-  },[cartCount])
-  
-
-
+  }, [cartCount])
 
 
 
@@ -388,7 +384,7 @@ const Navbar = () => {
       {/* Add padding for mobile bottom nav */}
       <div className="md:hidden h-16"></div>
     </>
-  ); 
+  );
 };
 
 export default Navbar;

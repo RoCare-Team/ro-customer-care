@@ -7,10 +7,10 @@ import FloatingWhatsAppButton from "../ui/FloatingWhatsAppButton";
 const Footer = () => {
   // Top 5 Kent Customer Care cities
   const CustomerCares = [
-    { name: "Kent Customer Care", path: "/kent-customer-care" },
-    { name: "Pureit Customer Care", path: "/pureit-customer-care" },
+    { name: "Kent Customer Care", path: "/kent-customer-care"},
+    { name: "Pureit Customer Care", path: "/pureit-customer-care"},
     { name: "Livpure Customer Care", path: "/livpure-customer-care" },
-    { name: "Hindware Customer Care", path: "/hindware-customer-care" },
+    { name: "Hindware Customer Care", path: "/hindware-customer-care"},
     { name: "HI TECH Customer Care", path: "/hi-tech-customer-care"},
     { name: "Haier Customer Care", path: "/haier-customer-care"},
   ];
