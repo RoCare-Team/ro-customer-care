@@ -896,7 +896,7 @@ export default function ROServicePage() {
                     Best and Qualified RO Water Purifier Services in India.
                   </strong>
                   <p className="text-gray-700">
-                    Get connected with the industry's best. RO Customer Care Service provides a nationwide network of trained and skilled experts. We solve your RO water purifier related issues swiftly and ensure you get the best quality of drinking water.
+                    Get connected with the industry&apos;s best. RO Customer Care Service provides a nationwide network of trained and skilled experts. We solve your RO water purifier related issues swiftly and ensure you get the best quality of drinking water.
                   </p>
                 </div>
 
