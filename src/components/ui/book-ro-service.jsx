@@ -839,38 +839,8 @@ const ROServices = ({ onAddressSubmit, handleClose }) => {
             <meta name="description" content={"Expert RO service and customer care for Kent, Pureit, Livpure, Hindware, Haier & more. Book trusted water purifier repair in Delhi, Mumbai, Gurgaon & cities."} />
             <meta property="og:description" content={"Expert RO service and customer care for Kent, Pureit, Livpure, Hindware, Haier & more. Book trusted water purifier repair in Delhi, Mumbai, Gurgaon & cities."} />
             <meta property="og:url" content={`https://www.ro-customer-care-service.in`} />
-            <meta
-        name="google-site-verification"
-        content="q41FuVUyme5nV0L1_vt1jZYf3TKb3W5E5RgNfQtqEDs"
-      />
+              <link rel="canonical" href="https://www.ro-customer-care-service.in/" />
 
-      {/* Google Tag Manager Script */}
-      <script
-        dangerouslySetInnerHTML={{
-          __html: `
-            (function(w,d,s,l,i){
-              w[l]=w[l]||[];
-              w[l].push({'gtm.start': new Date().getTime(), event:'gtm.js'});
-              var f=d.getElementsByTagName(s)[0],
-              j=d.createElement(s),
-              dl=l!='dataLayer'?'&l='+l:'';
-              j.async=true;
-              j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;
-              f.parentNode.insertBefore(j,f);
-            })(window,document,'script','dataLayer','GTM-NC2PKLNB');
-          `,
-        }}
-      />
-
-      {/* Google Tag Manager (noscript fallback) */}
-      <noscript>
-        <iframe
-          src="https://www.googletagmanager.com/ns.html?id=GTM-NC2PKLNB"
-          height="0"
-          width="0"
-          style={{ display: "none", visibility: "hidden" }}
-        ></iframe>
-      </noscript>
           </Head>
       <Toaster
         position="top-center"
