@@ -694,7 +694,7 @@ export default function ROServicePage() {
   href={
     pageData?.page_url
       ? `https://www.ro-customer-care-service.in/${pageData.page_url}`
-      : "https://www.ro-customer-care-service.in/"
+      : `https://www.ro-customer-care-service.in/${slug}`
   }
 />
 
