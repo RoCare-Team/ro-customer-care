@@ -25,6 +25,7 @@ import LoginModal from './login';
 import { getCartItems } from '@/utils/cardData';
 import { useAuth } from '@/contexts/userAuth';
 import Image from 'next/image';
+import Head from 'next/head';
 
 
 
@@ -833,6 +834,14 @@ const ROServices = ({ onAddressSubmit, handleClose }) => {
 
   return (
     <>
+     <Head>
+            <title>{"RO Customer Care & Service in India"}</title>
+            <meta name="description" content={"Expert RO service and customer care for Kent, Pureit, Livpure, Hindware, Haier & more. Book trusted water purifier repair in Delhi, Mumbai, Gurgaon & cities."} />
+            <meta property="og:description" content={"Expert RO service and customer care for Kent, Pureit, Livpure, Hindware, Haier & more. Book trusted water purifier repair in Delhi, Mumbai, Gurgaon & cities."} />
+            <meta property="og:url" content={`https://www.ro-customer-care-service.in`} />
+              <link rel="canonical" href="https://www.ro-customer-care-service.in/" />
+
+          </Head>
       <Toaster
         position="top-center"
         toastOptions={{

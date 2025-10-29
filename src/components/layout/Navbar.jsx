@@ -1,4 +1,3 @@
-
 "use client";
 import { useState, useCallback, useEffect, useRef } from "react";
 import {
@@ -18,91 +17,82 @@ import { getCartItems } from "@/utils/cardData";
 import Link from "next/link";
 
 const Navbar = () => {
-  // ✅ consume context
   const { isLoggedIn, userInfo, logout } = useAuth();
 
-  const carts = getCartItems();
-
-
-  const [cartCount, setCartCount] = useState();
+  const [cartCount, setCartCount] = useState(0);
   const [openLoginModal, setOpenLoginModal] = useState(false);
   const [activeTab, setActiveTab] = useState("home");
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const userDropdownRef = useRef(null);
   const mobileUserDropdownRef = useRef(null);
 
-  console.log("cartCount", cartCount);
+  // ✅ Function to update cart count
+  const updateCartCount = useCallback(() => {
+    try {
+      const cartItems = getCartItems();
+      console.log("📦 Cart items loaded:", cartItems);
+      
+      if (!cartItems || !Array.isArray(cartItems)) {
+        console.log("⚠️ No cart items or invalid format");
+        setCartCount(0);
+        return;
+      }
 
-
-  // ✅ Load cart data and calculate count
-  // useEffect(() => {
-  //   const loadCartData = () => {
-  //     const cartItems = getCartItems();
-  //     console.log("totalItems",cartItems.length,);
-
-  //     if (!Array.isArray(cartItems)) {
-  //       setCartCount(0);
-  //       return;
-  //     }
-
-  //     // Count total quantity or items
-  //     // const totalItems = cartItems.reduce(
-  //     //   (sum, item) => sum + (parseInt(item.quantity) || 1),
-  //     //   0
-  //     // );
-
-  //     setCartCount(cartItems.length);
-  //   };
-
-  //   // Initial load
-  //   loadCartData();
-
-  //   // Update on storage/cart changes
-  //   window.addEventListener("storage", loadCartData);
-  //   window.addEventListener("cartUpdated", loadCartData);
-
-  //   return () => {
-  //     window.removeEventListener("storage", loadCartData);
-  //     window.removeEventListener("cartUpdated", loadCartData);
-  //   };
-  // }, [isLoggedIn]);
-
-
-  useEffect(() => {
-    if (cartCount?.length >= 0) {
-      setCartCount(cartCount.length)
+      const count = cartItems.length;
+      console.log("✅ Cart count updated:", count);
+      setCartCount(count);
+    } catch (error) {
+      console.error("❌ Error loading cart:", error);
+      setCartCount(0);
     }
-  }, [cartCount])
+  }, []);
 
+  // ✅ Load cart on mount and when login state changes
+  useEffect(() => {
+    console.log("🔄 Navbar mounted or login changed. isLoggedIn:", isLoggedIn);
+    updateCartCount();
+  }, [isLoggedIn, updateCartCount]);
 
+  // ✅ Listen for cart updates
+  useEffect(() => {
+    console.log("👂 Setting up cart listeners");
 
-  // ✅ Close dropdowns when clicked outside
-  // useEffect(() => {
-  //   const handleClickOutside = (e) => {
-  //     if (userDropdownRef.current && !userDropdownRef.current.contains(e.target)) {
-  //       setUserDropdownOpen(false);
-  //     }
-  //     if (mobileUserDropdownRef.current && !mobileUserDropdownRef.current.contains(e.target)) {
-  //       setUserDropdownOpen(false);
-  //     }
-  //   };
+    // Custom event listener
+    const handleCartUpdate = () => {
+      console.log("🔔 Cart update event received");
+      updateCartCount();
+    };
 
-  //   document.addEventListener("mousedown", handleClickOutside);
-  //   return () => document.removeEventListener("mousedown", handleClickOutside);
-  // }, []);
+    // Storage event listener (for cross-tab updates)
+    const handleStorage = (e) => {
+      if (e.key === 'cart' || e.key === null) {
+        console.log("🔔 Storage event received");
+        updateCartCount();
+      }
+    };
 
-  // ✅ Logout using context
-  // ✅ Logout using context
+    window.addEventListener("cartUpdated", handleCartUpdate);
+    window.addEventListener("storage", handleStorage);
 
+    // Also check every 2 seconds as fallback
+    const interval = setInterval(() => {
+      console.log("⏰ Periodic cart check");
+      updateCartCount();
+    }, 2000);
 
-
+    return () => {
+      console.log("🧹 Cleaning up cart listeners");
+      window.removeEventListener("cartUpdated", handleCartUpdate);
+      window.removeEventListener("storage", handleStorage);
+      clearInterval(interval);
+    };
+  }, [updateCartCount]);
 
   // ✅ Handle navigation
   const handleNavigation = useCallback(
     (tab, action) => {
       setActiveTab(tab);
 
-      // Check if user needs to be logged in for this action
       if (
         (tab === "profile" || tab === "cart" || tab === "bookings") &&
         !isLoggedIn
@@ -112,14 +102,11 @@ const Navbar = () => {
       }
 
       if (action === "cart") {
-        // Check if cart has items before redirecting
         const cartItems = getCartItems();
         if (!cartItems || cartItems.length === 0) {
-          // Optional: Show a message that cart is empty
           alert("Your cart is empty!");
           return;
         }
-        // Redirect to checkout page
         window.location.href = "/checkout";
       } else if (action === "profile") {
         window.location.href = "/account-details";
@@ -137,22 +124,12 @@ const Navbar = () => {
     window.location.href = "tel:+917065012902";
   };
 
-
   const handleLogout = () => {
     console.log("Logging out user...");
-    logout(); // ✅ Call the context logout
-    setUserDropdownOpen(false); // Close the dropdown
+    logout();
+    setUserDropdownOpen(false);
+    setCartCount(0);
   };
-
-  useEffect(() => {
-    // whenever login state changes, reload cart count etc.
-    if (!isLoggedIn) {
-      setCartCount(0);
-    }
-  }, [isLoggedIn]);
-
-
-
 
   return (
     <>
@@ -170,10 +147,6 @@ const Navbar = () => {
               </span>
             </a>
           </div>
-
-
-
-
 
           {/* Right Side Actions */}
           <div className="flex items-center space-x-2 md:space-x-4">
@@ -336,41 +309,33 @@ const Navbar = () => {
       {/* Mobile Bottom Navigation */}
       <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-40">
         <div className="flex justify-around items-center py-2">
-          {/* Home */}
           <button
             onClick={() => handleNavigation("home", "home")}
-            className={`flex flex-col items-center p-2 ${activeTab === "home" ? "text-blue-600" : "text-gray-500"
-              }`}
+            className={`flex flex-col items-center p-2 ${activeTab === "home" ? "text-blue-600" : "text-gray-500"}`}
           >
             <Home className="w-6 h-6" />
             <span className="text-xs font-medium mt-1">Home</span>
           </button>
 
-          {/* Bookings */}
           <button
             onClick={() => handleNavigation("bookings", "bookings")}
-            className={`flex flex-col items-center p-2 ${activeTab === "bookings" ? "text-blue-600" : "text-gray-500"
-              }`}
+            className={`flex flex-col items-center p-2 ${activeTab === "bookings" ? "text-blue-600" : "text-gray-500"}`}
           >
             <Calendar className="w-6 h-6" />
             <span className="text-xs font-medium mt-1">Bookings</span>
           </button>
 
-          {/* Profile */}
           <button
             onClick={() => handleNavigation("profile", "profile")}
-            className={`flex flex-col items-center p-2 ${activeTab === "profile" ? "text-blue-600" : "text-gray-500"
-              }`}
+            className={`flex flex-col items-center p-2 ${activeTab === "profile" ? "text-blue-600" : "text-gray-500"}`}
           >
             <User className="w-6 h-6" />
             <span className="text-xs font-medium mt-1">Profile</span>
           </button>
 
-          {/* Call */}
           <button
             onClick={handleCall}
-            className={`flex flex-col items-center p-2 ${activeTab === "call" ? "text-blue-600" : "text-gray-500"
-              }`}
+            className={`flex flex-col items-center p-2 ${activeTab === "call" ? "text-blue-600" : "text-gray-500"}`}
           >
             <Phone className="w-6 h-6" />
             <span className="text-xs font-medium mt-1">Call</span>

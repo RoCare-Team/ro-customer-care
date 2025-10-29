@@ -15,6 +15,7 @@ import FaqSectionRO from "@/components/ui/customerReview";
 import OurBrandSection from "@/components/ui/ourBrandServe";
 import { parseCustomerCareSlug } from "@/utils/customerCareValidPage";
 import CustomerCarePage from "@/components/ui/customer-care";
+import Head from "next/head";
 
 // Service categories mapping with "All" option
 const serviceCategories = [
@@ -674,9 +675,30 @@ export default function ROServicePage() {
 
   // Service page: add to cart button or checkout buttons
 
+  console.log("pageData99999999999999",pageData);
+  
+
 
   return (
     <>
+    <Head>
+        <title>{pageData?.page_title || "RO Service India - Call 9268887770 Now - Same Day Repair"}</title>
+        <meta name="description" content={pageData?.page_description || "RO not working? Don't risk your family's health! Get expert RO service India - doorstep repair in 30 minutes. Trusted by 1000+ homes. Call 9268887770 today!"} />
+        <meta name="keywords" content={pageData?.page_keywords} />
+        <meta property="og:title" content={pageData?.page_title} />
+        <meta property="og:description" content={pageData?.page_description || "RO not working? Don't risk your family's health! Get expert RO service India - doorstep repair in 30 minutes. Trusted by 1000+ homes. Call 9268887770 today!"} />
+        <meta property="og:image" content={pageData?.image} />
+        <meta property="og:url" content={`https://www.ro-customer-care-service.in//${pageData?.page_url}`} />
+<link
+  rel="canonical"
+  href={
+    pageData?.page_url
+      ? `https://www.ro-customer-care-service.in/${pageData.page_url}`
+      : "https://www.ro-customer-care-service.in/"
+  }
+/>
+
+      </Head>
       <Navbar />
       <div className="min-h-screen bg-gray-50 mt-0 md:mt-16">
         <div className="max-w-7xl mx-auto p-6">
