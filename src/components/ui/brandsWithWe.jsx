@@ -8,6 +8,7 @@ import { Autoplay } from "swiper/modules";
 
 import "swiper/css";
 
+
 const brands = [
   { name: "", src: "/Brand/samsung-logo.webp" },
   { name: "", src: "/Brand/toshiba-logoo.webp" },
