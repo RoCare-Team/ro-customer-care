@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useState, useEffect } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import CustomerSupport from "../../../public/images/customer-help.webp";
 
 const PhoneIcon = (props) => (
@@ -20,33 +20,35 @@ const MailIcon = (props) => (
 const customerCareData = [
   { brand: "All", slug: "ro-customer-care", logo: CustomerSupport, title: "All Brand Customer Support Services" },
   { brand: "Kent", slug: "kent-customer-care", logo: CustomerSupport, title: "Kent RO Customer Support – Contact Details", helpline: "+91 9278912345", email: "service@kent.co.in" },
-  { brand: "Eureka Forbes", slug: "eureka-forbes-customer-care", logo: CustomerSupport, title: "Eureka Forbes Service Helpline", helpline: "7039883333", email: "customercare@eurekaforbes.com" },
   { brand: "Blue Star", slug: "blue-star-customer-care", logo: CustomerSupport, title: "Blue Star Water Purifier Customer Care", helpline: "08075781177", email: "customerservice@bluestarindia.com" },
   { brand: "Livpure", slug: "livpure-customer-care", logo: CustomerSupport, title: "Livpure RO Water Helpline Number", helpline: "08068493939", email: "wecare@livpure.in" },
-  { brand: "Doctor Fresh", slug: "doctor-fresh-customer-care", logo: CustomerSupport, title: "Doctor Fresh Customer Care", helpline: "+91 9011587716", email: "info@doctorfresh.in" },
   { brand: "LG", slug: "lg-customer-care", logo: CustomerSupport, title: "LG RO Purifier Customer Support", helpline: "080 6937 9999 / +91 18001809999", email: "serviceindia@lg.com" },
   { brand: "Pureit", slug: "pureit-customer-care", logo: CustomerSupport, title: "Pureit Service Helpline Number", helpline: "+91 1860 210 1000", email: "pureit@woshin.com" },
 ];
 
 const CustomerCarePage = () => {
-  const pathname = usePathname(); // ✅ get full path
-  const currentSlug = pathname.split("/").pop(); // extract slug
+  const pathname = usePathname();
+  const router = useRouter();
+  const currentSlug = pathname.split("/").pop();
   const [selectedBrand, setSelectedBrand] = useState(customerCareData[0]);
 
   useEffect(() => {
-    // match slug with brand.slug
     const foundBrand = customerCareData.find(
       (b) => b.slug.toLowerCase() === currentSlug?.toLowerCase()
     );
-
     if (foundBrand) setSelectedBrand(foundBrand);
-    else setSelectedBrand(customerCareData[0]); // default All
+    else setSelectedBrand(customerCareData[0]);
   }, [currentSlug]);
 
   const individualBrands = customerCareData.filter((b) => b.brand !== "All");
 
+  const handleBrandClick = (brand) => {
+    setSelectedBrand(brand);
+    router.replace(`/${brand.slug}`); // ✅ change URL without adding history entry
+  };
+
   const BrandDetailCard = ({ brand }) => (
-    <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8 transition-all duration-300 hover:shadow-2xl hover:scale-[1.01] flex flex-col md:flex-row items-center md:items-center gap-8">
+    <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8 transition-all duration-300 hover:shadow-2xl hover:scale-[1.01] flex flex-col md:flex-row items-center gap-8">
       <div className="w-40 h-40 md:w-48 md:h-48 flex-shrink-0 overflow-hidden rounded-xl shadow">
         <Image src={brand.logo} alt={brand.brand} width={180} height={180} className="object-cover w-full h-full" />
       </div>
@@ -85,15 +87,17 @@ const CustomerCarePage = () => {
                   return (
                     <div
                       key={brand.brand}
-                      onClick={() => setSelectedBrand(brand)}
-                      className={`flex items-center justify-center p-3 rounded-lg border-2 transition-all cursor-pointer ${isSelected
+                      onClick={() => handleBrandClick(brand)}
+                      className={`flex items-center justify-center p-3 rounded-lg border-2 transition-all cursor-pointer ${
+                        isSelected
                           ? "border-blue-500 bg-blue-50 shadow-md"
                           : "border-gray-200 hover:bg-gray-100"
-                        }`}
+                      }`}
                     >
                       <span
-                        className={`text-sm font-semibold text-center ${isSelected ? "text-blue-600" : "text-gray-700"
-                          }`}
+                        className={`text-sm font-semibold text-center ${
+                          isSelected ? "text-blue-600" : "text-gray-700"
+                        }`}
                       >
                         {brand.brand}
                       </span>

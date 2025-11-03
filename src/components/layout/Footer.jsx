@@ -13,6 +13,7 @@ const Footer = () => {
     { name: "Hindware Customer Care", path: "/hindware-customer-care"},
     { name: "HI TECH Customer Care", path: "/hi-tech-customer-care"},
     { name: "Haier Customer Care", path: "/haier-customer-care"},
+    
   ];
 
   const roCities = ["delhi", "mumbai", "gurgaon", "bangalore", "chennai"];

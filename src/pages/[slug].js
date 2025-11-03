@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState, useRef } from "react";
-import { ShoppingCart, Plus, Minus, Clock, Shield, Award, Wrench, Droplets, Check, Star, Phone, User, Truck, Zap, CheckCircle, X, Grid } from "lucide-react";
+import { ShoppingCart, Plus, Minus, Clock, Shield, Award, Wrench, Droplets, Check, Star, Phone, User, Truck, Zap, CheckCircle, X, Grid, ChevronDown } from "lucide-react";
 import LoginPopup from "@/components/ui/login";
 import { useRouter } from "next/router";
 import AwardCertifications from "@/components/ui/AwardCertificate";
@@ -43,15 +43,11 @@ export default function ROServicePage() {
   const [brands, setBrands] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isInstallation, setIsInstallation] = useState(false);
-
+  const [open, setOpen] = useState(false);
 
 
 
   const { brand, isCustomerCare } = parseCustomerCareSlug(slug);
-
-  console.log("isCustomerCare", isCustomerCare);
-
-
   const [pageData, setPageData] = useState(null);
 
   // const cityWase
@@ -126,7 +122,6 @@ export default function ROServicePage() {
         try {
           cartDetails = JSON.parse(storedCart);
         } catch (parseError) {
-          console.warn("checkoutState in localStorage is invalid JSON:", storedCart);
           setCartData([]);
           return;
         }
@@ -256,7 +251,6 @@ export default function ROServicePage() {
       }
 
       const data = await response.json();
-      console.log("Page data fetched:", data);
       setPageData(data)
       return data;
     } catch (error) {
@@ -675,13 +669,13 @@ export default function ROServicePage() {
 
   // Service page: add to cart button or checkout buttons
 
-  console.log("pageData99999999999999",pageData);
-  
+  console.log("pageData99999999999999", pageData);
+
 
 
   return (
     <>
-    <Head>
+      <Head>
         <title>{pageData?.page_title || "RO Service India - Call 9268887770 Now - Same Day Repair"}</title>
         <meta name="description" content={pageData?.page_description || "RO not working? Don't risk your family's health! Get expert RO service India - doorstep repair in 30 minutes. Trusted by 1000+ homes. Call 9268887770 today!"} />
         <meta name="keywords" content={pageData?.page_keywords} />
@@ -689,14 +683,14 @@ export default function ROServicePage() {
         <meta property="og:description" content={pageData?.page_description || "RO not working? Don't risk your family's health! Get expert RO service India - doorstep repair in 30 minutes. Trusted by 1000+ homes. Call 9268887770 today!"} />
         <meta property="og:image" content={pageData?.image} />
         <meta property="og:url" content={`https://www.ro-customer-care-service.in//${pageData?.page_url}`} />
-<link
-  rel="canonical"
-  href={
-    pageData?.page_url
-      ? `https://www.ro-customer-care-service.in/${pageData.page_url}`
-      : `https://www.ro-customer-care-service.in/${slug}`
-  }
-/>
+        <link
+          rel="canonical"
+          href={
+            pageData?.page_url
+              ? `https://www.ro-customer-care-service.in/${pageData.page_url}`
+              : `https://www.ro-customer-care-service.in/${slug}`
+          }
+        />
 
       </Head>
       <Navbar />
@@ -1037,37 +1031,52 @@ export default function ROServicePage() {
           ) : <CustomerCarePage />}
           <AwardCertifications />
           <ROServiceContent pageData={pageData} />
-
-          <div className="max-w-9xl mx-auto p-2">
-            {/* ✅ Popular Cities Section */}
-            <section className="bg-white rounded-xl shadow-md p-2">
-              <h2 className="text-2xl font-bold text-blue-600 mb-4">
+          <div className="max-w-8xl mx-auto p-4">
+            <section className="bg-white rounded-2xl shadow-lg p-5 transition-all duration-300">
+              {/* ✅ Clickable Header */}
+              <button
+                onClick={() => setOpen(!open)}
+                className="flex justify-between items-center w-full text-xl sm:text-2xl font-bold text-blue-700 hover:text-blue-800 transition-colors duration-300"
+              >
                 Service in Popular Cities
-              </h2>
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                {popularCities.map((city, idx) => {
-                  // city slug
-                  const slugCity = city.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+                <ChevronDown
+                  className={`w-6 h-6 transform transition-transform duration-300 ${open ? "rotate-180" : ""
+                    }`}
+                />
+              </button>
 
-                  // Strip the city from the existing slug (if any)
-                  const brandSlug = slug?.split("-").filter(part => !popularCities
-                    .map(c => c.toLowerCase().replace(/[^a-z0-9]+/g, "-"))
-                    .includes(part)
-                  ).join("-");
+              {/* ✅ Smooth dropdown with animation */}
+              <div
+                className={`overflow-hidden transition-all duration-500 ease-in-out ${open ? "max-h-[600px] opacity-100 mt-4" : "max-h-0 opacity-0"
+                  }`}
+              >
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                  {popularCities.map((city, idx) => {
+                    const slugCity = city.toLowerCase().replace(/[^a-z0-9]+/g, "-");
 
-                  // Build the final URL
-                  const href = `${brandSlug}-${slugCity}`;
+                    const brandSlug = slug
+                      ?.split("-")
+                      .filter(
+                        (part) =>
+                          !popularCities
+                            .map((c) => c.toLowerCase().replace(/[^a-z0-9]+/g, "-"))
+                            .includes(part)
+                      )
+                      .join("-");
 
-                  return (
-                    <Link
-                      key={idx}
-                      href={href}
-                      className="px-3 py-2 border rounded-lg bg-gray-50 hover:bg-blue-50 text-sm font-medium text-gray-700 hover:text-blue-600 transition"
-                    >
-                      {safeCapitalize(brandSlug)} Service {city}
-                    </Link>
-                  );
-                })}
+                    const href = `${brandSlug}-${slugCity}`;
+
+                    return (
+                      <Link
+                        key={idx}
+                        href={href}
+                        className="px-4 py-3 border rounded-xl bg-gray-50 hover:bg-blue-50 text-sm sm:text-base font-medium text-gray-700 hover:text-blue-700 transition-all duration-300 shadow-sm hover:shadow-md"
+                      >
+                        {safeCapitalize(brandSlug)}  {city}
+                      </Link>
+                    );
+                  })}
+                </div>
               </div>
             </section>
           </div>
