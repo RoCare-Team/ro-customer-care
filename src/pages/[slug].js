@@ -16,6 +16,7 @@ import OurBrandSection from "@/components/ui/ourBrandServe";
 import { parseCustomerCareSlug } from "@/utils/customerCareValidPage";
 import CustomerCarePage from "@/components/ui/customer-care";
 import Head from "next/head";
+import { usePathname } from "next/navigation";
 
 // Service categories mapping with "All" option
 const serviceCategories = [
@@ -50,7 +51,12 @@ export default function ROServicePage() {
   const { brand, isCustomerCare } = parseCustomerCareSlug(slug);
   const [pageData, setPageData] = useState(null);
 
-  // const cityWase
+  // const cityWase]
+
+  const pathname = usePathname();
+
+  console.log("pathnamepathnamepathnamepathname",pathname);
+  
 
 
   // Ref for auto-scroll
@@ -108,7 +114,12 @@ export default function ROServicePage() {
 
 
 
-
+ useEffect(() => {
+    // If URL path contains uppercase → redirect to lowercase
+    if (/[A-Z]/.test(pathname)) {
+      router.replace(pathname.toLowerCase());
+    }
+  }, [pathname, router]);
 
 
   // Load cart data from localStorage
