@@ -45,9 +45,6 @@ export default function ROServicePage() {
   const [loading, setLoading] = useState(true);
   const [isInstallation, setIsInstallation] = useState(false);
   const [open, setOpen] = useState(false);
-
-
-
   const { brand, isCustomerCare } = parseCustomerCareSlug(slug);
   const [pageData, setPageData] = useState(null);
 
@@ -55,7 +52,6 @@ export default function ROServicePage() {
 
   const pathname = usePathname();
 
-  console.log("pathnamepathnamepathnamepathname",pathname);
   
 
 
@@ -114,12 +110,23 @@ export default function ROServicePage() {
 
 
 
- useEffect(() => {
-    // If URL path contains uppercase → redirect to lowercase
-    if (/[A-Z]/.test(pathname)) {
-      router.replace(pathname.toLowerCase());
+useEffect(() => {
+  if (!pathname) return; // 🛑 Wait until pathname is defined
+
+  const hasUppercase = /[A-Z]/.test(pathname);
+  const hasQueryParams = typeof window !== "undefined" && window.location.search && window.location.search !== "";
+
+  if (hasUppercase || hasQueryParams) {
+    // ✅ Convert to lowercase + remove query params safely
+    const cleanUrl = pathname.toLowerCase();
+
+    // ✅ Replace the URL only if different
+    if (window.location.pathname !== cleanUrl) {
+      router.replace(cleanUrl);
     }
-  }, [pathname, router]);
+  }
+}, [pathname, router]);
+
 
 
   // Load cart data from localStorage
