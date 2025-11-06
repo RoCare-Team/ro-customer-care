@@ -148,6 +148,8 @@ const Navbar = () => {
             </a>
           </div>
 
+          
+
           {/* Right Side Actions */}
           <div className="flex items-center space-x-2 md:space-x-4">
             <div className="hidden md:inline-flex gap-2 bg-blue-600 rounded-full text-white px-4 py-2 font-bold shadow-lg animate-blink hover:scale-110 transition-all duration-300 cursor-pointer">
