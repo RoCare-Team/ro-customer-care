@@ -1,81 +1,31 @@
 "use client";
-import { useState } from "react";
-import DOMPurify from "dompurify";
-
+import { useEffect, useState } from "react";
+import DOMPurify from "isomorphic-dompurify";
 
 export default function ROServiceContent({ pageData }) {
+  const [safeHTML, setSafeHTML] = useState("");
 
-  console.log("pageData-----",pageData);
-  
- 
-    
-  const [showMore, setShowMore] = useState(false);
-
-  // Split content into preview and full
-  const previewContent = (
-    <>
-      {/* <p className="text-gray-700 leading-relaxed">
-        Looking For RO Service? Click And Register It Now!! 
-      </p>
-      <p className="text-gray-700 leading-relaxed">
-        We can reach everyone's door within 24 hours; consequently, people can connect us
-        for quick response at their premises, and we also assure high-rated water purifier repair
-        and maintenance services at comparatively low cost...
-      </p> */}
-    </>
-  );
-
-  const fullContent = (
-    <>
-      {/* <p className="text-gray-700 leading-relaxed">
-        Our RO service technician is result-oriented and believes in providing quality services
-        without failing. They not only propose water purifier servicing but also guide people
-        about minor issues in the RO water purifier. Recruiting us as your water purifier technician
-        can be the top deal for RO water purifier repair with these privileges...
-      </p>
-
-      <h2 className="text-2xl font-semibold text-gray-800 mt-4">
-        How Water Purifier Service Near Me Works
-      </h2>
-      <ol className="list-decimal list-inside space-y-2 text-gray-700">
-        <li>Book RO service near me by calling us or filling the enquiry form.</li>
-        <li>Get technician confirmation call.</li>
-        <li>Schedule your service.</li>
-        <li>Technician will visit your place.</li>
-        <li>Service completed.</li>
-        <li>Make payment and share your valuable feedback.</li>
-      </ol> */}
-
-      {/* You can add the rest of your content here (Kent, Pureit, Livpure sections) */}
-    </>
-  );
+  useEffect(() => {
+    if (pageData?.content_text) {
+      const clean = DOMPurify.sanitize(pageData.content_text);
+      setSafeHTML(clean);
+    }
+  }, [pageData]);
 
   return (
     <section className="p-6 space-y-4">
       <h1 className="text-3xl font-bold text-gray-800">
-      {pageData?.page_title}
+        {pageData?.page_title}
       </h1>
 
-      <p className="text-justify text-gray-700 dark:text-gray-800"  dangerouslySetInnerHTML={{
-    __html: pageData &&  DOMPurify?.sanitize(pageData?.content_text || "")
-  }}>
-        
-      </p>
-
-
-      {/* Show preview content always */}
-      {previewContent}
-
-      {/* Toggleable full content */}
-      {showMore && fullContent}
-
-      {/* Show More / Show Less button */}
-      <button
-        className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-        onClick={() => setShowMore(!showMore)}
-      >
-        {showMore ? "Show Less" : "Show More"}
-      </button>
+      {safeHTML ? (
+        <p
+          className="text-justify text-gray-700 dark:text-gray-800"
+          dangerouslySetInnerHTML={{ __html: safeHTML }}
+        />
+      ) : (
+        <p className="text-gray-400"></p>
+      )}
     </section>
   );
 }

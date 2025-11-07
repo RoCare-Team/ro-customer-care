@@ -16,6 +16,7 @@
     "@mui/material": "^7.3.2",
     "dompurify": "^3.2.7",
     "framer-motion": "^12.23.22",
+    "isomorphic-dompurify": "^2.31.0",
     "lucide-react": "^0.544.0",
     "mysql2": "^3.15.1",
     "next": "15.5.3",

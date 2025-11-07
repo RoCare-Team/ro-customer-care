@@ -11,7 +11,6 @@ export const parseCustomerCareSlug = (slug) => {
 
   const isCustomerCare = slug.includes("customer-care");
 
-  console.log("isCustomerCare111111111",isCustomerCare);
   
 
   if (!isCustomerCare) {

@@ -1,3 +1,6 @@
+// ROServicesClient.js - Client Component
+'use client';
+
 import { useCallback, useEffect, useState, useRef } from "react";
 import { ShoppingCart, Plus, Minus, Clock, Shield, Award, Wrench, Droplets, Check, Star, Phone, User, Truck, Zap, CheckCircle, X, Grid, ChevronDown } from "lucide-react";
 import LoginPopup from "@/components/ui/login";
@@ -8,7 +11,7 @@ import BlueNearbyAreas from "@/components/ui/nearbyService";
 import Footer from "@/components/layout/Footer";
 import Navbar from "@/components/layout/Navbar";
 import Image from "next/image";
-import RoServiceCare from "../../public/images/ro-care-service.png"
+import RoServiceCare from "../../public/images/ro-care-service.png";
 import { useAuth } from "@/contexts/userAuth";
 import Link from "next/link";
 import FaqSectionRO from "@/components/ui/customerReview";
@@ -16,6 +19,7 @@ import OurBrandSection from "@/components/ui/ourBrandServe";
 import { parseCustomerCareSlug } from "@/utils/customerCareValidPage";
 import CustomerCarePage from "@/components/ui/customer-care";
 import Head from "next/head";
+import { usePathname } from "next/navigation";
 
 // Service categories mapping with "All" option
 const serviceCategories = [
@@ -27,33 +31,9 @@ const serviceCategories = [
   { id: 5, name: "Un-installation", apiName: "Un-installation", icon: Zap, color: "bg-red-100 text-red-600" }
 ];
 
-// Popular cities array
-const popularCities = [
-  "Gurgaon", "Delhi", "Mumbai", "Bangalore", "Hyderabad", "Ahmedabad",
-  "Chennai", "Kolkata", "Noida", "Ghaziabad", "Faridabad", "Surat", "Pune",
-  "Jaipur", "Lucknow", "Kanpur", "Thane", "Patna", "Indore", "Bhopal",
-  "Ranchi", "Meerut", "Varanasi", "Allahabad", "Prayagraj", "Chandigarh",
-];
-
-const validCities = [
-  "gurgaon", "delhi", "mumbai", "bangalore", "hyderabad", "ahmedabad",
-  "chennai", "kolkata", "noida", "ghaziabad", "faridabad", "surat", "pune",
-  "jaipur", "lucknow", "kanpur", "thane", "patna", "indore", "bhopal",
-  "ranchi", "greater-noida", "meerut", "varanasi", "allahabad", "prayagraj",
-  "chandigarh",
-];
-
-function safeCapitalize(str) {
-  if (!str) return "";
-  return str
-    .split("-")
-    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-    .join(" ");
-}
-
-export default function ROServicePage({ initialServices, initialPageData, initialBrands, slug }) {
+export default function ROServicesClient({ slug }) {
   const router = useRouter();
-  const [allServices, setAllServices] = useState(initialServices || []);
+  const [allServices, setAllServices] = useState([]);
   const [cartData, setCartData] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
@@ -64,42 +44,62 @@ export default function ROServicePage({ initialServices, initialPageData, initia
   const [city, setCity] = useState("");
   const [invalid, setInvalid] = useState(false);
   const { isLoggedIn, handleLoginSuccess } = useAuth();
-  const [brands, setBrands] = useState(initialBrands || []);
+  const [brands, setBrands] = useState([]);
+  const [brandsLoading, setBrandsLoading] = useState(true);
   const [isInstallation, setIsInstallation] = useState(false);
   const [open, setOpen] = useState(false);
   const { brand, isCustomerCare } = parseCustomerCareSlug(slug);
-  const [pageData, setPageData] = useState(initialPageData);
-  const [isPageLoading, setIsPageLoading] = useState(false); // ✅ NEW: Track route changes
+  const [pageData, setPageData] = useState(null);
 
+  const pathname = usePathname();
+  
+  // Ref for auto-scroll
   const servicesRef = useRef(null);
 
-  // ✅ NEW: Handle route changes
+  // City data
+  const popularCities = [
+    "Gurgaon",
+    "Delhi",
+    "Mumbai",
+    "Bangalore",
+    "Hyderabad",
+    "Ahmedabad",
+    "Chennai",
+    "Kolkata",
+    "Noida",
+    "Ghaziabad",
+    "Faridabad",
+    "Surat",
+    "Pune",
+    "Jaipur",
+    "Lucknow",
+    "Kanpur",
+    "Thane",
+    "Patna",
+    "Indore",
+    "Bhopal",
+    "Ranchi",
+    "Meerut",
+    "Varanasi",
+    "Allahabad",
+    "Prayagraj",
+    "Chandigarh",
+  ];
+
+  // URL normalization effect
   useEffect(() => {
-    const handleRouteChangeStart = () => setIsPageLoading(true);
-    const handleRouteChangeComplete = () => setIsPageLoading(false);
-    const handleRouteChangeError = () => setIsPageLoading(false);
+    if (!pathname) return;
 
-    router.events.on('routeChangeStart', handleRouteChangeStart);
-    router.events.on('routeChangeComplete', handleRouteChangeComplete);
-    router.events.on('routeChangeError', handleRouteChangeError);
+    const hasUppercase = /[A-Z]/.test(pathname);
+    const hasQueryParams = typeof window !== "undefined" && window.location.search && window.location.search !== "";
 
-    return () => {
-      router.events.off('routeChangeStart', handleRouteChangeStart);
-      router.events.off('routeChangeComplete', handleRouteChangeComplete);
-      router.events.off('routeChangeError', handleRouteChangeError);
-    };
-  }, [router]);
-
-  // ✅ NEW: Update state when props change (after navigation)
-  useEffect(() => {
-    if (initialServices) {
-      setAllServices(initialServices);
+    if (hasUppercase || hasQueryParams) {
+      const cleanUrl = pathname.toLowerCase();
+      if (window.location.pathname !== cleanUrl) {
+        router.replace(cleanUrl);
+      }
     }
-    if (initialPageData) {
-      setPageData(initialPageData);
-    }
-    setIsPageLoading(false);
-  }, [initialServices, initialPageData, slug]);
+  }, [pathname, router]);
 
   // Load cart data from localStorage
   const loadCartFromStorage = useCallback(() => {
@@ -152,6 +152,93 @@ export default function ROServicePage({ initialServices, initialPageData, initia
     }
   }, [isLoggedIn, cartLoaded, loadCartFromStorage]);
 
+  // Fetch services from API
+  const fetchServices = useCallback(async (leadType = 1) => {
+    try {
+      setIsLoading(true);
+      const response = await fetch(
+        'https://waterpurifierservicecenter.in/customer/ro_customer/all_services.php',
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ lead_type: leadType })
+        }
+      );
+
+      if (!response.ok) throw new Error('Failed to fetch services');
+
+      const data = await response.json();
+
+      const formattedServices = data.service_details?.map((service) => ({
+        id: service.id,
+        service_id: service.id,
+        service_name: service.service_name,
+        description: service.description,
+        price: parseInt(service.price) || 0,
+        price_without_discount: parseInt(service.price_without_discount) || parseInt(service.price) || 0,
+        image: service.image || "/api/placeholder/150/120",
+        status: service.status || "1",
+        duration: "45 mins",
+        warranty: "3 months"
+      })) || [];
+
+      setAllServices(formattedServices);
+      setCategoryTitle(data.Title || 'Available Services');
+
+    } catch (error) {
+      console.error('Error fetching services:', error);
+      setAllServices([]);
+      setCategoryTitle('Services');
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchServices();
+  }, [fetchServices]);
+
+  // Memoized function to fetch page data
+  const getPageData = useCallback(async (pageUrl) => {
+    const url = pageUrl || (Array.isArray(slug) ? slug[0] : slug);
+    
+    if (!url) return null;
+
+    try {
+      const response = await fetch(`/api/getPage?page_url=${encodeURIComponent(url)}`);
+      if (!response.ok) {
+        console.error("Failed to fetch page data:", response.status);
+        return null;
+      }
+
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error("Error fetching page data:", error);
+      return null;
+    }
+  }, [slug]);
+
+  // Fetch page data
+  useEffect(() => {
+    const fetchData = async () => {
+      const data = await getPageData();
+      setPageData(data);
+    };
+
+    if (slug) {
+      fetchData();
+    }
+  }, [slug, getPageData]);
+
+  function safeCapitalize(str) {
+    if (!str) return "";
+    return str
+      .split("-")
+      .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+      .join(" ");
+  }
+
   // Handle cart actions
   const handleCartAction = useCallback(async ({ serviceId, operation, currentQuantity = 0 }) => {
     if (!isLoggedIn) {
@@ -177,6 +264,8 @@ export default function ROServicePage({ initialServices, initialPageData, initia
         source: 'Ro Customer Service Care'
       };
 
+      console.log("Cart action payload:", payload);
+
       const res = await fetch(
         "https://waterpurifierservicecenter.in/customer/ro_customer/add_to_cart.php",
         {
@@ -188,12 +277,18 @@ export default function ROServicePage({ initialServices, initialPageData, initia
 
       if (res.ok) {
         const data = await res.json();
-        
+        localStorage.setItem("checkoutState", data)
+        console.log("Cart API response:", data);
+
         if (data.AllCartDetails) {
           localStorage.setItem("checkoutState", JSON.stringify(data.AllCartDetails));
           localStorage.setItem("cart_total_price", data.total_price || data.total_main || 0);
+
+          // Trigger cart reload
           setCartLoaded(prev => !prev);
         }
+      } else {
+        console.error("Cart API failed:", res.status);
       }
     } catch (error) {
       console.error("Cart update failed:", error);
@@ -204,6 +299,7 @@ export default function ROServicePage({ initialServices, initialPageData, initia
   const onLoginSuccess = useCallback((userData) => {
     handleLoginSuccess(userData);
 
+    // Execute pending cart action if exists
     if (pendingCartAction) {
       const { serviceId, operation, currentQuantity } = pendingCartAction;
       handleCartAction({ serviceId, operation, currentQuantity });
@@ -211,7 +307,7 @@ export default function ROServicePage({ initialServices, initialPageData, initia
     }
   }, [handleLoginSuccess, pendingCartAction, handleCartAction]);
 
-  // Add to cart
+  // Add to cart handler
   const handleAddToCart = useCallback((service) => {
     if (!isLoggedIn) {
       setOpenLoginModal(true);
@@ -230,7 +326,7 @@ export default function ROServicePage({ initialServices, initialPageData, initia
     if (!existingItem) {
       setCartData(prev => [...prev, { service_id: service.id, quantity: 1 }]);
     }
-  }, [cartData, handleCartAction, isLoggedIn]);
+  }, [cartData, handleCartAction, setCartData, isLoggedIn]);
 
   // Increase quantity
   const handleIncreaseQty = useCallback(async (service) => {
@@ -250,7 +346,7 @@ export default function ROServicePage({ initialServices, initialPageData, initia
     } catch (err) {
       console.error(err);
     }
-  }, [cartData, handleCartAction]);
+  }, [cartData, handleCartAction, setCartData]);
 
   // Decrease quantity
   const handleDecreaseQty = useCallback((service) => {
@@ -260,6 +356,7 @@ export default function ROServicePage({ initialServices, initialPageData, initia
     if (!existingItem) return;
 
     if (currentQuantity <= 1) {
+      // Remove completely
       handleCartAction({
         serviceId: service.id,
         operation: "remove",
@@ -268,6 +365,7 @@ export default function ROServicePage({ initialServices, initialPageData, initia
 
       setCartData(prev => prev.filter(item => item.service_id !== service.id));
     } else {
+      // Decrease by 1
       handleCartAction({
         serviceId: service.id,
         operation: "delete",
@@ -282,11 +380,12 @@ export default function ROServicePage({ initialServices, initialPageData, initia
         )
       );
     }
-  }, [cartData, handleCartAction]);
+  }, [cartData, handleCartAction, setCartData]);
 
   // Parse HTML description
   const parseDescription = (htmlString) => {
     if (!htmlString) return [];
+
     const cleanText = htmlString.replace(/<[^>]*>/g, '').replace(/\t/g, '');
     return cleanText.split('\n').filter(item => item.trim().length > 0);
   };
@@ -338,21 +437,31 @@ export default function ROServicePage({ initialServices, initialPageData, initia
     );
   }, [cartData]);
 
+  // Category selection based on slug
   useEffect(() => {
     if (!slug) return;
 
     const lowerSlug = slug.toLowerCase();
+
     let matchedCategory = null;
 
-    if (lowerSlug.includes("uninstallation") || lowerSlug.includes("un-installation")) {
+    if (
+      lowerSlug.includes("uninstallation") ||
+      lowerSlug.includes("un-installation")
+    ) {
       matchedCategory = serviceCategories.find(
         (cat) => cat.apiName.toLowerCase() === "un-installation"
       );
-    } else if (lowerSlug.includes("installation") || lowerSlug.includes("install")) {
+    }
+    else if (
+      lowerSlug.includes("installation") ||
+      lowerSlug.includes("install")
+    ) {
       matchedCategory = serviceCategories.find(
         (cat) => cat.apiName.toLowerCase() === "installation"
       );
-    } else {
+    }
+    else {
       matchedCategory = serviceCategories.find((cat) =>
         lowerSlug.includes(cat.apiName.toLowerCase())
       );
@@ -365,51 +474,82 @@ export default function ROServicePage({ initialServices, initialPageData, initia
     }
   }, [slug]);
 
+  // Fetch brands data
   useEffect(() => {
     if (!slug) return;
 
-    // ✅ Only fetch brands client-side when needed (not on server)
     const fetchBrands = async () => {
       try {
+        setBrandsLoading(true);
         const res = await fetch("/api/getBrands");
         const data = await res.json();
         setBrands(data);
       } catch (err) {
         console.error(err);
+      } finally {
+        setBrandsLoading(false);
       }
     };
 
-    // Only fetch if brands not already loaded
-    if (brands.length === 0) {
-      fetchBrands();
-    }
-  }, [slug, brands.length]);
+    fetchBrands();
+  }, [slug]);
+
+  // Valid cities for URL matching
+  const validCities = [
+    "gurgaon", "delhi", "mumbai", "bangalore", "hyderabad", "ahmedabad",
+    "chennai", "kolkata", "noida", "ghaziabad", "faridabad", "surat", "pune",
+    "jaipur", "lucknow", "kanpur", "thane", "patna", "indore", "bhopal",
+    "ranchi", "greater-noida", "meerut", "varanasi", "allahabad", "prayagraj",
+    "chandigarh",
+  ];
 
   const normalizedSlug = slug?.replace(/\/$/, "").trim().toLowerCase();
 
+  // Check if slug matches any brand page_url
   const matchBrand = brands.find((brand) =>
     brand.page_urls?.some((url) => url.trim().toLowerCase() === normalizedSlug)
   );
 
+  // Check if slug matches valid patterns
   let matchesValidPattern = false;
-  if (
-  normalizedSlug === "ro-customer-care" ||
-  normalizedSlug === "ro-service" ||
-  normalizedSlug.includes("-customer-care")
-) {
-  matchesValidPattern = true;
-}
+  if (normalizedSlug === "ro-customer-care" || normalizedSlug === "ro-service") {
+    matchesValidPattern = true;
+  }
+  if (normalizedSlug?.startsWith("ro-customer-care-")) {
+    const city = normalizedSlug.replace("ro-customer-care-", "");
+    matchesValidPattern = validCities.includes(city);
+  }
+  if (normalizedSlug?.startsWith("ro-service-")) {
+    const city = normalizedSlug.replace("ro-service-", "");
+    matchesValidPattern = validCities.includes(city);
+  }
 
-if (normalizedSlug?.startsWith("ro-customer-care-")) {
-  const city = normalizedSlug.replace("ro-customer-care-", "");
-  matchesValidPattern = validCities.includes(city);
-}
+  // Show loading while checking brands
+  if (brandsLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-b from-blue-50 to-white">
+        <div className="relative">
+          <div className="w-16 h-16 rounded-full border-4 border-t-transparent border-blue-500 animate-spin"></div>
+          <div className="absolute inset-0 flex items-center justify-center">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="w-8 h-8 text-blue-500 animate-pulse"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+            >
+              <path d="M12 2C12 2 7 8 7 12.5C7 16.09 9.91 19 13.5 19C17.09 19 20 16.09 20 12.5C20 8 15 2 15 2H12Z" />
+            </svg>
+          </div>
+        </div>
+        <p className="mt-6 text-lg md:text-xl font-semibold text-blue-600 animate-pulse">
+          Checking page availability...
+        </p>
+      </div>
+    );
+  }
 
-if (normalizedSlug?.startsWith("ro-service-")) {
-  const city = normalizedSlug.replace("ro-service-", "");
-  matchesValidPattern = validCities.includes(city);
-}
-  if (!matchBrand && !matchesValidPattern) {
+  // Only show 404 after data has loaded AND no match found
+  if (!brandsLoading && !matchBrand && !matchesValidPattern) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-b from-blue-50 to-white px-6 text-center">
         <div className="bg-red-100 p-6 rounded-full mb-6 shadow-lg animate-pulse">
@@ -429,8 +569,12 @@ if (normalizedSlug?.startsWith("ro-service-")) {
           </svg>
         </div>
 
-        <h1 className="text-4xl md:text-5xl font-extrabold text-gray-800 mb-4">404</h1>
-        <h2 className="text-xl md:text-2xl font-semibold text-gray-700 mb-4">Page Not Found</h2>
+        <h1 className="text-4xl md:text-5xl font-extrabold text-gray-800 mb-4">
+          404
+        </h1>
+        <h2 className="text-xl md:text-2xl font-semibold text-gray-700 mb-4">
+          Page Not Found
+        </h2>
         <p className="text-gray-600 text-base md:text-lg max-w-lg mb-6">
           The page you are looking for doesn&apos;t exist. Please check the URL or go back to the homepage.
         </p>
@@ -452,10 +596,7 @@ if (normalizedSlug?.startsWith("ro-service-")) {
     );
   }
 
-
-  console.log("sluggggg",slug);
-  
-
+  // Main render
   return (
     <>
       <Head>
@@ -480,7 +621,7 @@ if (normalizedSlug?.startsWith("ro-service-")) {
         <div className="max-w-7xl mx-auto p-6">
           {!isCustomerCare ? (
             <div className="grid lg:grid-cols-12 gap-6">
-              {/* Left Sidebar - Service Categories */}
+              {/* Left Sidebar - Service Categories - STICKY */}
               <div className="lg:col-span-3">
                 <div className="sticky top-20 bg-white rounded-lg p-4 shadow-sm">
                   <div className="flex items-center gap-2 mb-4">
@@ -488,8 +629,7 @@ if (normalizedSlug?.startsWith("ro-service-")) {
                       <Check className="h-4 w-4 text-blue-600" />
                     </div>
                     <div>
-                      <p className="text-lg font-medium text-red-500">{slug !== "ro-service" ? pageData?.page_name : "Water Purifier Service @9266779917"}</p>
-                      {/* <p className="text-sm font-medium text-red-500">{pageData?.page_name}</p> */}
+                      <p className="text-sm font-medium text-red-500">{pageData?.page_name}</p>
                     </div>
                   </div>
                   <div className="grid grid-cols-2 lg:grid-cols-1 gap-3">
@@ -518,8 +658,9 @@ if (normalizedSlug?.startsWith("ro-service-")) {
                 </div>
               </div>
 
-              {/* Main Content - Hero and Services */}
+              {/* Main Content - Hero and Services - SCROLLABLE */}
               <div className="lg:col-span-6">
+                {/* Hero Section */}
                 <Image
                   src={RoServiceCare}
                   alt="RO-Customer-Care-banner-image"
@@ -576,6 +717,7 @@ if (normalizedSlug?.startsWith("ro-service-")) {
                         return (
                           <div key={service.id} className="bg-white rounded-lg p-6 shadow-sm border border-gray-200 hover:border-blue-300 hover:shadow-md transition-all text-gray-700 dark:text-gray-800">
                             <div className="flex flex-row gap-4 p-3 rounded-xl border border-gray-200 shadow-sm">
+                              {/* Service Info */}
                               <div className="flex-1">
                                 <div className="flex items-start justify-between mb-2">
                                   <h3 className="text-base sm:text-lg font-bold text-gray-900">
@@ -597,6 +739,7 @@ if (normalizedSlug?.startsWith("ro-service-")) {
                                   ))}
                                 </ul>
 
+                                {/* Duration + Warranty */}
                                 <div className="flex items-center gap-3 text-[11px] sm:text-xs text-gray-500">
                                   <div className="flex items-center gap-1">
                                     <Clock className="h-3 w-3" />
@@ -608,6 +751,7 @@ if (normalizedSlug?.startsWith("ro-service-")) {
                                   </div>
                                 </div>
 
+                                {/* Discount */}
                                 {service.price_without_discount > service.price && (
                                   <div className="flex items-center gap-2 mt-1">
                                     <span className="text-xs text-gray-500 line-through">
@@ -620,6 +764,7 @@ if (normalizedSlug?.startsWith("ro-service-")) {
                                 )}
                               </div>
 
+                              {/* Image + Price + Button */}
                               <div className="w-28 sm:w-40 flex flex-col items-center gap-2">
                                 <div className="w-20 h-16 sm:w-28 sm:h-20 bg-gradient-to-br from-blue-100 to-blue-200 rounded-lg flex items-center justify-center overflow-hidden">
                                   {service.image && service.image !== "/api/placeholder/150/120" ? (
@@ -668,6 +813,7 @@ if (normalizedSlug?.startsWith("ro-service-")) {
                                     </button>
                                   </div>
                                 )}
+
                               </div>
                             </div>
                           </div>
@@ -678,18 +824,19 @@ if (normalizedSlug?.startsWith("ro-service-")) {
                 </div>
               </div>
 
-              {/* Right Sidebar - Cart and Info */}
+              {/* Right Sidebar - Cart and Info - STICKY */}
               <div className="lg:col-span-3">
                 <div className="section-heading bg-white text-gray-800 font-sans p-4 rounded-lg">
                   <strong className="block text-lg md:text-xl mb-2">
                     Best and Qualified RO Water Purifier Services in India.
                   </strong>
                   <p className="text-gray-700">
-                    Get connected with the industry&apos;s best. RO Customer Care Service provides a nationwide network of trained and skilled experts.
+                    Get connected with the industry&apos;s best. RO Customer Care Service provides a nationwide network of trained and skilled experts. We solve your RO water purifier related issues swiftly and ensure you get the best quality of drinking water.
                   </p>
                 </div>
 
                 <div className="sticky top-20 space-y-6 max-h-[calc(100vh-6rem)] overflow-y-auto">
+                  {/* Cart Section */}
                   <div className="bg-white rounded-lg shadow-sm hidden sm:block">
                     <div className="p-4 border-b border-gray-200">
                       <div className="flex items-center justify-between">
@@ -739,234 +886,112 @@ if (normalizedSlug?.startsWith("ro-service-")) {
                                       <Plus className="h-3 w-3" />
                                     </button>
                                   </div>
-                                  <span className="font-semibold">₹{servicePrice * serviceQuantity}</span>
+                                  <button
+                                    onClick={() => service && handleCartAction({
+                                      serviceId: service.id,
+                                      operation: "remove",
+                                      currentQuantity: serviceQuantity
+                                    })}
+                                    className="text-red-500 hover:text-red-700 text-sm font-medium"
+                                  >
+                                    Remove
+                                  </button>
                                 </div>
                               </div>
                             );
                           })}
+                        </div>
+                      )}
 
-                          <div className="border-t pt-4 text-gray-700 dark:text-gray-800">
-                            <div className="flex justify-between items-center mb-4">
-                              <span className="font-semibold">Total</span>
-                              <span className="text-xl font-bold text-blue-600">₹{totalPrice}</span>
-                            </div>
-                            <Link href="/checkout">
-                              <button className="w-full bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700 transition-colors">
-                                Proceed to Checkout ({totalItems} items)
-                              </button>
-                            </Link>
+                      {cartData.length > 0 && (
+                        <div className="border-t border-gray-200 pt-4 mt-4">
+                          <div className="flex items-center justify-between mb-4">
+                            <span className="text-gray-600">Total:</span>
+                            <span className="text-lg font-bold text-gray-900">₹{totalPrice}</span>
                           </div>
+                          <button
+                            onClick={() => router.push('/checkout')}
+                            className="w-full bg-blue-600 text-white py-2.5 px-4 rounded-lg font-medium hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
+                          >
+                            <ShoppingCart className="h-4 w-4" />
+                            Proceed to Checkout
+                          </button>
                         </div>
                       )}
                     </div>
                   </div>
 
-                  <div className="bg-white rounded-lg p-4 shadow-sm">
-                    <div className="flex items-center gap-2 mb-4">
-                      <div className="w-5 h-5 bg-blue-100 rounded-full flex items-center justify-center">
-                        <Check className="h-3 w-3 text-blue-600" />
-                      </div>
-                      <h3 className="font-semibold text-gray-900">Why Choose Us</h3>
-                    </div>
-
+                  {/* Service Benefits */}
+                  <div className="bg-white rounded-lg shadow-sm p-4">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-3">Why Choose Us?</h3>
                     <div className="space-y-3">
                       <div className="flex items-center gap-3">
-                        <User className="h-4 w-4 text-blue-600" />
+                        <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                          <Clock className="h-4 w-4 text-blue-600" />
+                        </div>
                         <div>
-                          <p className="font-medium text-gray-900 text-sm">Expert Professionals</p>
-                          <p className="text-xs text-gray-600">Certified technicians with years of experience</p>
+                          <p className="text-sm font-medium text-gray-900">Same Day Service</p>
+                          <p className="text-xs text-gray-500">Quick response within hours</p>
                         </div>
                       </div>
-
                       <div className="flex items-center gap-3">
-                        <Truck className="h-4 w-4 text-blue-600" />
+                        <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                          <Shield className="h-4 w-4 text-green-600" />
+                        </div>
                         <div>
-                          <p className="font-medium text-gray-900 text-sm">Doorstep Service</p>
-                          <p className="text-xs text-gray-600">We come to you at your convenience</p>
+                          <p className="text-sm font-medium text-gray-900">3 Months Warranty</p>
+                          <p className="text-xs text-gray-500">On all services and parts</p>
                         </div>
                       </div>
-
                       <div className="flex items-center gap-3">
-                        <Clock className="h-4 w-4 text-blue-600" />
+                        <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
+                          <Award className="h-4 w-4 text-purple-600" />
+                        </div>
                         <div>
-                          <p className="font-medium text-gray-900 text-sm">Quick Service</p>
-                          <p className="text-xs text-gray-600">Same day or next day service available</p>
+                          <p className="text-sm font-medium text-gray-900">Expert Technicians</p>
+                          <p className="text-xs text-gray-500">Trained professionals</p>
                         </div>
                       </div>
                     </div>
                   </div>
+
+                  {/* Call Now Button */}
+                  <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-lg shadow-lg p-4 text-center">
+                    <h3 className="text-white font-semibold mb-2">Need Immediate Help?</h3>
+                    <p className="text-blue-100 text-sm mb-3">Call our experts now</p>
+                    <a
+                      href="tel:9268887770"
+                      className="inline-flex items-center gap-2 bg-white text-blue-600 px-6 py-3 rounded-lg font-bold text-lg hover:bg-blue-50 transition-colors"
+                    >
+                      <Phone className="h-5 w-5" />
+                      9268887770
+                    </a>
+                  </div>
                 </div>
               </div>
             </div>
-          ) : <CustomerCarePage />}
-          
-          <AwardCertifications />
-          <ROServiceContent pageData={pageData} />
-          
-          <div className="max-w-8xl mx-auto p-4">
-            <section className="bg-white rounded-2xl shadow-lg p-5 transition-all duration-300">
-              <button
-                onClick={() => setOpen(!open)}
-                className="flex justify-between items-center w-full text-xl sm:text-2xl font-bold text-blue-700 hover:text-blue-800 transition-colors duration-300"
-              >
-                Service in Popular Cities
-                <ChevronDown
-                  className={`w-6 h-6 transform transition-transform duration-300 ${open ? "rotate-180" : ""}`}
-                />
-              </button>
-
-              <div
-                className={`overflow-hidden transition-all duration-500 ease-in-out ${open ? "max-h-[600px] opacity-100 mt-4" : "max-h-0 opacity-0"}`}
-              >
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                  {popularCities.map((city, idx) => {
-                    const slugCity = city.toLowerCase().replace(/[^a-z0-9]+/g, "-");
-                    const brandSlug = slug
-                      ?.split("-")
-                      .filter(
-                        (part) =>
-                          !popularCities
-                            .map((c) => c.toLowerCase().replace(/[^a-z0-9]+/g, "-"))
-                            .includes(part)
-                      )
-                      .join("-");
-                    const href = `${brandSlug}-${slugCity}`;
-
-                    return (
-                      <Link
-                        key={idx}
-                        href={href}
-                        className="px-4 py-3 border rounded-xl bg-gray-50 hover:bg-blue-50 text-sm sm:text-base font-medium text-gray-700 hover:text-blue-700 transition-all duration-300 shadow-sm hover:shadow-md"
-                      >
-                        {safeCapitalize(brandSlug)} {city}
-                      </Link>
-                    );
-                  })}
-                </div>
-              </div>
-            </section>
-          </div>
-
-          <FaqSectionRO />
-          <OurBrandSection />
+          ) : (
+            <CustomerCarePage brand={brand} />
+          )}
         </div>
       </div>
+
+      {/* Additional Sections */}
+      <AwardCertifications />
+      <OurBrandSection />
+      <ROServiceContent />
+      <BlueNearbyAreas />
+      <FaqSectionRO />
       <Footer />
-      
-      <LoginPopup
-        open={openLoginModal}
-        onClose={() => setOpenLoginModal(false)}
-        onLoginSuccess={onLoginSuccess}
-      />
 
-      {totalItems > 0 && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 block md:hidden z-50" style={{ marginBottom: "85px" }}>
-          <Link href="/checkout">
-            <button className="bg-green-600 text-white rounded-full shadow-xl flex items-center justify-center gap-4 px-6 py-3 min-w-[220px]">
-              <div className="w-6 h-6 bg-white rounded-full flex items-center justify-center">
-                <ShoppingCart className="h-4 w-4 text-green-600" />
-              </div>
-
-              <div className="text-center">
-                <div className="font-semibold text-sm">View cart</div>
-                <div className="text-xs font-medium">
-                  {totalItems} ITEM{totalItems !== 1 ? "S" : ""}
-                </div>
-              </div>
-
-              <div className="w-6 h-6 bg-white rounded-full flex items-center justify-center">
-                <svg
-                  className="h-3 w-3 text-green-600"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9 5l7 7-7 7"
-                  />
-                </svg>
-              </div>
-            </button>
-          </Link>
-        </div>
+      {/* Login Modal */}
+      {openLoginModal && (
+        <LoginPopup
+          open={openLoginModal}
+          onClose={() => setOpenLoginModal(false)}
+          onLoginSuccess={onLoginSuccess}
+        />
       )}
     </>
   );
-}
-
-// ✅ SERVER-SIDE RENDERING - This makes content visible in "View Source"
-export async function getServerSideProps(context) {
-  const { slug } = context.params;
-  const pageUrl = Array.isArray(slug) ? slug[0] : slug;
-  
-  try {
-    // ✅ OPTIMIZATION 1: Only fetch services (most important for SEO)
-    const servicesResponse = await fetch(
-      'https://waterpurifierservicecenter.in/customer/ro_customer/all_services.php',
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ lead_type: 1 })
-      }
-    );
-
-    let services = [];
-    if (servicesResponse.ok) {
-      const data = await servicesResponse.json();
-      services = data.service_details?.map((service) => ({
-        id: service.id,
-        service_id: service.id,
-        service_name: service.service_name,
-        description: service.description,
-        price: parseInt(service.price) || 0,
-        price_without_discount: parseInt(service.price_without_discount) || parseInt(service.price) || 0,
-        image: service.image || "/api/placeholder/150/120",
-        status: service.status || "1",
-        duration: "45 mins",
-        warranty: "3 months"
-      })) || [];
-    }
-
-    // ✅ OPTIMIZATION 2: Only fetch current page data (not all brands)
-    let pageData = null;
-    try {
-      const protocol = context.req.headers.host.includes('localhost') ? 'http' : 'https';
-      const pageResponse = await fetch(
-        `${protocol}://${context.req.headers.host}/api/getPage?page_url=${encodeURIComponent(pageUrl)}`
-      );
-      
-      if (pageResponse.ok) {
-        pageData = await pageResponse.json();
-      }
-    } catch (error) {
-      console.error("Error fetching page data:", error);
-    }
-
-    // ✅ OPTIMIZATION 3: Brands fetched client-side only (not needed for SEO)
-    // Don't fetch all brands on server - too much data
-    // They will be loaded in browser only when needed
-
-    return {
-      props: {
-        initialServices: services,
-        initialPageData: pageData,
-        initialBrands: [], // ✅ Empty - will load client-side
-        slug: pageUrl
-      }
-    };
-  } catch (error) {
-    console.error("Error in getServerSideProps:", error);
-    
-    return {
-      props: {
-        initialServices: [],
-        initialPageData: null,
-        initialBrands: [],
-        slug: pageUrl
-      }
-    };
-  }
 }

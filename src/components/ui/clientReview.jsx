@@ -1,14 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import Image from "next/image";
-import { Star } from "lucide-react";
+import { Star, User, UserRound } from "lucide-react"; // 👈 Import male/female icons
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Pagination, Autoplay } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/pagination";
-
-import AvatorIcon from "../../../public/images/avatorImage.jpg";
 
 const reviews = [
   {
@@ -18,7 +15,7 @@ const reviews = [
     review:
       "Amazing service! The team was super professional and completed the RO installation quickly. Highly recommended!",
     rating: 5,
-    avatar: AvatorIcon,
+    gender: "male",
   },
   {
     id: 2,
@@ -27,7 +24,7 @@ const reviews = [
     review:
       "Customer support was great and they explained everything clearly. Very satisfied with their service.",
     rating: 4,
-    avatar: AvatorIcon,
+    gender: "female",
   },
   {
     id: 3,
@@ -36,7 +33,7 @@ const reviews = [
     review:
       "On-time service and very polite staff. I will definitely book them again in future.",
     rating: 5,
-    avatar: AvatorIcon,
+    gender: "male",
   },
   {
     id: 4,
@@ -45,7 +42,7 @@ const reviews = [
     review:
       "Excellent experience! The service team is knowledgeable and prompt. Great job done.",
     rating: 5,
-    avatar: AvatorIcon,
+    gender: "female",
   },
   {
     id: 5,
@@ -54,7 +51,7 @@ const reviews = [
     review:
       "Smooth process from booking to completion. Really happy with the RO service quality.",
     rating: 4,
-    avatar: AvatorIcon,
+    gender: "male",
   },
 ];
 
@@ -62,9 +59,9 @@ export default function ClientReviews() {
   const [selected, setSelected] = useState(null);
 
   return (
-    <section className="py-12 bg-white dark:bg-white"> {/* Always white */}
+    <section className="py-12 bg-white">
       <div className="max-w-7xl mx-auto px-4">
-        <h2 className="text-2xl md:text-3xl font-bold text-center mb-10 text-gray-800 dark:text-gray-800">
+        <h2 className="text-2xl md:text-3xl font-bold text-center mb-10 text-gray-800">
           What Our Clients Say
         </h2>
 
@@ -85,25 +82,23 @@ export default function ClientReviews() {
             <SwiperSlide key={review.id}>
               <div
                 onClick={() => setSelected(review.id)}
-                className="bg-white dark:bg-white p-6 rounded-2xl shadow-md hover:shadow-xl transition duration-300 cursor-pointer h-full flex flex-col justify-between"
+                className="bg-white p-6 rounded-2xl shadow-md hover:shadow-xl transition duration-300 cursor-pointer h-full flex flex-col justify-between"
               >
                 <div>
                   {/* User Info */}
                   <div className="flex items-center mb-4">
-                    <Image
-                      src={review.avatar}
-                      alt={review.name}
-                      width={50}
-                      height={50}
-                      className="rounded-full object-cover"
-                    />
+                    <div className="bg-gray-100 p-3 rounded-full">
+                      {review.gender === "female" ? (
+                        <UserRound className="w-8 h-8 text-pink-500" />
+                      ) : (
+                        <User className="w-8 h-8 text-blue-500" />
+                      )}
+                    </div>
                     <div className="ml-4">
-                      <h3 className="font-semibold text-lg text-gray-800 dark:text-gray-800">
+                      <h3 className="font-semibold text-lg text-gray-800">
                         {review.name}
                       </h3>
-                      <p className="text-gray-500 dark:text-gray-500 text-sm">
-                        {review.location}
-                      </p>
+                      <p className="text-gray-500 text-sm">{review.location}</p>
                     </div>
                   </div>
 
@@ -118,7 +113,7 @@ export default function ClientReviews() {
                   </div>
 
                   {/* Review Text */}
-                  <p className="text-gray-700 dark:text-gray-700 leading-relaxed">
+                  <p className="text-gray-700 leading-relaxed">
                     {review.review}
                   </p>
                 </div>
@@ -127,20 +122,20 @@ export default function ClientReviews() {
           ))}
         </Swiper>
 
-        {/* Modal for selected review */}
+        {/* Modal */}
         {selected && (
           <div
             className="fixed inset-0 bg-black/50 flex justify-center items-center z-50"
             onClick={() => setSelected(null)}
           >
             <div
-              className="bg-white dark:bg-white p-6 rounded-2xl shadow-xl max-w-md mx-4"
+              className="bg-white p-6 rounded-2xl shadow-xl max-w-md mx-4"
               onClick={(e) => e.stopPropagation()}
             >
-              <h3 className="text-xl font-bold mb-4 text-gray-800 dark:text-gray-800">
+              <h3 className="text-xl font-bold mb-4 text-gray-800">
                 {reviews.find((r) => r.id === selected)?.name}
               </h3>
-              <p className="text-gray-700 dark:text-gray-700">
+              <p className="text-gray-700">
                 {reviews.find((r) => r.id === selected)?.review}
               </p>
             </div>
