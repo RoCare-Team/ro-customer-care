@@ -69,11 +69,11 @@ export default function ROServicePage({ initialServices, initialPageData, initia
   const [open, setOpen] = useState(false);
   const { brand, isCustomerCare } = parseCustomerCareSlug(slug);
   const [pageData, setPageData] = useState(initialPageData);
-  const [isPageLoading, setIsPageLoading] = useState(false); // ✅ NEW: Track route changes
+  const [isPageLoading, setIsPageLoading] = useState(false);
 
   const servicesRef = useRef(null);
 
-  // ✅ NEW: Handle route changes
+  // Handle route changes
   useEffect(() => {
     const handleRouteChangeStart = () => setIsPageLoading(true);
     const handleRouteChangeComplete = () => setIsPageLoading(false);
@@ -90,7 +90,7 @@ export default function ROServicePage({ initialServices, initialPageData, initia
     };
   }, [router]);
 
-  // ✅ NEW: Update state when props change (after navigation)
+  // Update state when props change (after navigation)
   useEffect(() => {
     if (initialServices) {
       setAllServices(initialServices);
@@ -368,7 +368,7 @@ export default function ROServicePage({ initialServices, initialPageData, initia
   useEffect(() => {
     if (!slug) return;
 
-    // ✅ Only fetch brands client-side when needed (not on server)
+    // Fetch brands client-side when needed
     const fetchBrands = async () => {
       try {
         const res = await fetch("/api/getBrands");
@@ -393,22 +393,23 @@ export default function ROServicePage({ initialServices, initialPageData, initia
 
   let matchesValidPattern = false;
   if (
-  normalizedSlug === "ro-customer-care" ||
-  normalizedSlug === "ro-service" ||
-  normalizedSlug.includes("-customer-care")
-) {
-  matchesValidPattern = true;
-}
+    normalizedSlug === "ro-customer-care" ||
+    normalizedSlug === "ro-service" ||
+    normalizedSlug.includes("-customer-care")
+  ) {
+    matchesValidPattern = true;
+  }
 
-if (normalizedSlug?.startsWith("ro-customer-care-")) {
-  const city = normalizedSlug.replace("ro-customer-care-", "");
-  matchesValidPattern = validCities.includes(city);
-}
+  if (normalizedSlug?.startsWith("ro-customer-care-")) {
+    const city = normalizedSlug.replace("ro-customer-care-", "");
+    matchesValidPattern = validCities.includes(city);
+  }
 
-if (normalizedSlug?.startsWith("ro-service-")) {
-  const city = normalizedSlug.replace("ro-service-", "");
-  matchesValidPattern = validCities.includes(city);
-}
+  if (normalizedSlug?.startsWith("ro-service-")) {
+    const city = normalizedSlug.replace("ro-service-", "");
+    matchesValidPattern = validCities.includes(city);
+  }
+
   if (!matchBrand && !matchesValidPattern) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-b from-blue-50 to-white px-6 text-center">
@@ -452,10 +453,6 @@ if (normalizedSlug?.startsWith("ro-service-")) {
     );
   }
 
-
-  console.log("sluggggg",slug);
-  
-
   return (
     <>
       <Head>
@@ -489,7 +486,6 @@ if (normalizedSlug?.startsWith("ro-service-")) {
                     </div>
                     <div>
                       <p className="text-lg font-medium text-red-500">{slug !== "ro-service" ? pageData?.page_name : "Water Purifier Service @9266779917"}</p>
-                      {/* <p className="text-sm font-medium text-red-500">{pageData?.page_name}</p> */}
                     </div>
                   </div>
                   <div className="grid grid-cols-2 lg:grid-cols-1 gap-3">
@@ -897,45 +893,56 @@ if (normalizedSlug?.startsWith("ro-service-")) {
   );
 }
 
-// ✅ SERVER-SIDE RENDERING - This makes content visible in "View Source"
+// ✅ FIXED: SERVER-SIDE RENDERING with proper error handling
 export async function getServerSideProps(context) {
   const { slug } = context.params;
   const pageUrl = Array.isArray(slug) ? slug[0] : slug;
   
   try {
-    // ✅ OPTIMIZATION 1: Only fetch services (most important for SEO)
-    const servicesResponse = await fetch(
-      'https://waterpurifierservicecenter.in/customer/ro_customer/all_services.php',
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ lead_type: 1 })
-      }
-    );
-
+    // ✅ Fetch services
     let services = [];
-    if (servicesResponse.ok) {
-      const data = await servicesResponse.json();
-      services = data.service_details?.map((service) => ({
-        id: service.id,
-        service_id: service.id,
-        service_name: service.service_name,
-        description: service.description,
-        price: parseInt(service.price) || 0,
-        price_without_discount: parseInt(service.price_without_discount) || parseInt(service.price) || 0,
-        image: service.image || "/api/placeholder/150/120",
-        status: service.status || "1",
-        duration: "45 mins",
-        warranty: "3 months"
-      })) || [];
+    try {
+      const servicesResponse = await fetch(
+        'https://waterpurifierservicecenter.in/customer/ro_customer/all_services.php',
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ lead_type: 1 })
+        }
+      );
+
+      if (servicesResponse.ok) {
+        const data = await servicesResponse.json();
+        services = data.service_details?.map((service) => ({
+          id: service.id,
+          service_id: service.id,
+          service_name: service.service_name,
+          description: service.description,
+          price: parseInt(service.price) || 0,
+          price_without_discount: parseInt(service.price_without_discount) || parseInt(service.price) || 0,
+          image: service.image || "/api/placeholder/150/120",
+          status: service.status || "1",
+          duration: "45 mins",
+          warranty: "3 months"
+        })) || [];
+      }
+    } catch (error) {
+      console.error("Error fetching services:", error);
     }
 
-    // ✅ OPTIMIZATION 2: Only fetch current page data (not all brands)
+    // ✅ FIXED: Fetch page data using absolute URL
     let pageData = null;
     try {
-      const protocol = context.req.headers.host.includes('localhost') ? 'http' : 'https';
+      // Use environment variable or fallback to production URL
+      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://www.ro-customer-care-service.in';
+      
       const pageResponse = await fetch(
-        `${protocol}://${context.req.headers.host}/api/getPage?page_url=${encodeURIComponent(pageUrl)}`
+        `${baseUrl}/api/getPage?page_url=${encodeURIComponent(pageUrl)}`,
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          }
+        }
       );
       
       if (pageResponse.ok) {
@@ -943,23 +950,22 @@ export async function getServerSideProps(context) {
       }
     } catch (error) {
       console.error("Error fetching page data:", error);
+      // Continue without page data - use defaults
     }
 
-    // ✅ OPTIMIZATION 3: Brands fetched client-side only (not needed for SEO)
-    // Don't fetch all brands on server - too much data
-    // They will be loaded in browser only when needed
-
+    // Return props even if pageData is null (will use defaults in component)
     return {
       props: {
         initialServices: services,
         initialPageData: pageData,
-        initialBrands: [], // ✅ Empty - will load client-side
+        initialBrands: [], // Client-side only
         slug: pageUrl
       }
     };
   } catch (error) {
-    console.error("Error in getServerSideProps:", error);
+    console.error("Critical error in getServerSideProps:", error);
     
+    // Return minimal props to prevent 500 error
     return {
       props: {
         initialServices: [],
