@@ -594,7 +594,6 @@ const ROServices = ({ onAddressSubmit, handleClose }) => {
       appointment_date,
       source
     };
-    console.log(payload + 'fasdfasd');
 
     try {
       const res = await fetch("https://waterpurifierservicecenter.in/customer/ro_customer/add_lead_with_full_dtls.php", {
