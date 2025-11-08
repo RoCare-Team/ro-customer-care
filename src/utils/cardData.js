@@ -46,7 +46,6 @@ export const getCartItems = () => {
       total_main: item.total_main
     }));
   });
-console.log("items2222222222222",items);
 
   return items;
 };

@@ -456,8 +456,6 @@ const ROServices = ({ onAddressSubmit, handleClose }) => {
             }
             return prev.map(s => (s.id === serviceId ? { ...s, quantity: newQuantity } : s));
           });
-
-
           setCartLoaded(prev => !prev);
         }
       } catch (error) {
@@ -544,7 +542,6 @@ const ROServices = ({ onAddressSubmit, handleClose }) => {
       toast.error("Failed to save address. Please try again.", { id: submitToast });
     }
   };
-  console.log("selectedTime", selectedTime, selectedDate);
 
 
 
